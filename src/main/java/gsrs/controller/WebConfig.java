@@ -12,8 +12,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.lang.reflect.Method;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 @Configuration
 public class WebConfig {
@@ -96,11 +95,36 @@ public class WebConfig {
 
                                String idPlaceHolder = getMapping.idPlaceholder();
                                String notIdPlaceHolder = getMapping.notIdPlaceholder();
+
                                Set<String> updatedPatterns = new LinkedHashSet<>();
-                               for(String route : apiPattern.getPatterns()) {
+                               //Spring adds leading / to the paths if you forgot to put it
+                               //but GSRS doesn't want to have it sometimes
+                               // for example api/v1/context( id)  not api/v1/context/( id)
+                               //so check to see if we put a leading slash and if not get rid
+                               // of the leading slash which is now a middle slash
+                               Iterator<String> patternIter = apiPattern.getPatterns().iterator();
+
+                               Iterator<String> definedInAnnotation = Arrays.asList(getMapping.value()).iterator();
+                               Set<String> adjustedPatterns = new HashSet<>();
+                               while(patternIter.hasNext()){
+                                   String pattern = patternIter.next();
+                                   String defined = definedInAnnotation.next();
+                                   if(defined.charAt(0) != '/') {
+                                       int offset = pattern.lastIndexOf(defined);
+                                       if (offset > -1 && pattern.charAt(offset-1) == '/') {
+
+                                           String before = pattern.substring(0, offset-1);
+                                           adjustedPatterns.add(before + defined);
+                                       }
+                                   }else{
+                                       adjustedPatterns.add(pattern);
+                                   }
+                               }
+                               for(String route : adjustedPatterns) {
                                    String updatedRoute = idHelper.replaceId(route, idPlaceHolder);
                                    updatedRoute = idHelper.replaceInverseId(updatedRoute, notIdPlaceHolder);
                                    System.out.println("updated route : " + route + "  -> " + updatedRoute);
+
                                    updatedPatterns.add(updatedRoute);
 
                                }
