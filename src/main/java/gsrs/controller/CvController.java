@@ -1,6 +1,5 @@
 package gsrs.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -10,17 +9,16 @@ import ix.ginas.models.v1.ControlledVocabulary;
 import ix.ginas.models.v1.FragmentControlledVocabulary;
 import ix.ginas.models.v1.VocabularyTerm;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@GsrsRestApiController(context ="vocabularies",  idHelper = CommonIDRegexes.NUMBER)
+@GsrsRestApiController(context ="vocabularies",  idHelper = IdHelpers.NUMBER)
 public class CvController extends GsrsEntityController<ControlledVocabulary, Long> {
 
-    private static Pattern NUMBER_PATTERN = Pattern.compile("^"+CommonIDRegexes.NUMBER+"$");
+    private static Pattern NUMBER_PATTERN = Pattern.compile("^"+ IdHelpers.NUMBER.getRegexAsString()+"$");
     private static Set<String> fragmentDomains;
     private static Set<String> codeSystemDomains;
     static {
@@ -34,9 +32,7 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
         codeSystemDomains.add("CODE_SYSTEM");
         codeSystemDomains.add("DOCUMENT_TYPE");
     }
-    public CvController(){
-        System.out.println("FOUND CV CONTROLLER");
-    }
+
     @Autowired
     private ControlledVocabularyRepository repository;
 
@@ -137,7 +133,7 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
     public Optional<ControlledVocabulary> flexLookup(String someKindOfId) {
         Matcher matcher = NUMBER_PATTERN.matcher(someKindOfId);
         if(matcher.find()){
-            //is an id
+            //is an id - this shouldn't happen anymore since we changed the routing to ignore ID
             return get(parseIdFromString(someKindOfId));
         }
         //is the string a domain?

@@ -6,15 +6,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.ClassUtils;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -74,9 +71,9 @@ public class WebConfig {
                            if (gsrsRestApiAnnotation != null) {
 
 
-                               CommonIDRegexes commonIdHelper = gsrsRestApiAnnotation.idHelper();
+                               IdHelpers commonIdHelper = gsrsRestApiAnnotation.idHelper();
                                IdHelper idHelper;
-                               if(commonIdHelper ==CommonIDRegexes.CUSTOM){
+                               if(commonIdHelper == IdHelpers.CUSTOM){
                                    String className = gsrsRestApiAnnotation.customIdHelperClassName();
                                    try {
                                        if(className ==null || className.isEmpty()){
@@ -119,9 +116,9 @@ public class WebConfig {
                                 if (gsrsRestApiAnnotation != null) {
 
 
-                                    CommonIDRegexes commonIdHelper = gsrsRestApiAnnotation.idHelper();
+                                    IdHelpers commonIdHelper = gsrsRestApiAnnotation.idHelper();
                                     IdHelper idHelper;
-                                    if(commonIdHelper ==CommonIDRegexes.CUSTOM){
+                                    if(commonIdHelper == IdHelpers.CUSTOM){
                                         String className = gsrsRestApiAnnotation.customIdHelperClassName();
                                         try {
                                             if(className ==null || className.isEmpty()){

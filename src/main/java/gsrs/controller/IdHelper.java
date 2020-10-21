@@ -2,6 +2,7 @@ package gsrs.controller;
 
 public interface IdHelper {
 
+
     String getRegexAsString();
 
     String getInverseRegexAsString();

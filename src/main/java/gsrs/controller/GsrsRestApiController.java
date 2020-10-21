@@ -19,7 +19,7 @@ public @interface GsrsRestApiController {
     String[] context();
 
 
-    CommonIDRegexes idHelper() default CommonIDRegexes.UUID;
+    IdHelpers idHelper() default IdHelpers.UUID;
 
     Class<? extends IdHelper> customIdHelperClass() default IdHelper.class;
 

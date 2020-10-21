@@ -1,8 +1,6 @@
 package gsrs.controller;
 
-import java.util.regex.Pattern;
-
-public enum CommonIDRegexes implements IdHelper {
+public enum IdHelpers implements IdHelper {
 
     NUMBER("[0-9]+", "[^0-9]+"),
     STRING_NO_WHITESPACE("\\W+"),
@@ -13,11 +11,11 @@ public enum CommonIDRegexes implements IdHelper {
     private final String regex;
     private final String notRegex;
 
-    CommonIDRegexes(String regex, String notRegex) {
+    IdHelpers(String regex, String notRegex) {
         this.regex = regex;
         this.notRegex = notRegex;
     }
-    CommonIDRegexes(String regex) {
+    IdHelpers(String regex) {
         this(regex, "\\.+");
     }
 
