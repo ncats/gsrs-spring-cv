@@ -1,12 +1,11 @@
 package ix.ginas.models;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.ncats.common.util.TimeUtil;
-import gsrs.AuditConfig;
-import gsrs.ClearAuditorRule;
-import gsrs.LuceneSpringDemoApplication;
-import gsrs.TimeTraveller;
+import gsrs.*;
 import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.repository.PrincipalRepository;
+import gsrs.security.GsrsSecurityConfig;
 import gsrs.springUtils.AutowireHelper;
 import ix.core.models.Keyword;
 import ix.ginas.models.v1.ControlledVocabulary;
@@ -15,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -29,9 +30,18 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = LuceneSpringDemoApplication.class)
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({ClearAuditorRule.class , AuditConfig.class, AutowireHelper.class})
+@Import({ClearAuditorRule.class , AuditConfig.class, AutowireHelper.class, GsrsSecurityConfig.class})
 public class ControlledVocabRepositoryTest {
 
+    @TestConfiguration
+    public static class TestConfig {
+        @Bean
+        public ObjectMapper objectMapper(){
+            return new ObjectMapper();
+        }
+    }
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private ControlledVocabularyRepository repository;
 
