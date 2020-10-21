@@ -9,6 +9,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Rest Controller marker for a GSRS Entity API.
+ *
+ * @see GsrsRestApiGetMapping
+ * @see GsrsRestApiPostMapping
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @RestController

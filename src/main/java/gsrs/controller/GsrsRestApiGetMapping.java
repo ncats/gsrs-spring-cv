@@ -11,6 +11,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * An HTTP Get Mapping for a {@link GsrsRestApiController} annotated controller.
+ *
+ * Leading Slashes in the paths matter.  Unlike normal Spring
+ * GetMapping which always adds a leading slash these routes respect if you put a leading slash
+ * or not.  This allows you to write API routes like {@code api/context(id)} by making the path= "(id)".
+ *
+ * Use the ID Placeholder strings where you want to put your ID regular expressions.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @RequestMapping(
