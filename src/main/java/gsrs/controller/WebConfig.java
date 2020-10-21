@@ -1,5 +1,6 @@
 package gsrs.controller;
 
+import gsrs.springUtils.AutowireHelper;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -73,17 +74,39 @@ public class WebConfig {
                            if (gsrsRestApiAnnotation != null) {
 
 
-                                String IdRegex = gsrsRestApiAnnotation.idRegex();
+                               CommonIDRegexes commonIdHelper = gsrsRestApiAnnotation.idHelper();
+                               IdHelper idHelper;
+                               if(commonIdHelper ==CommonIDRegexes.CUSTOM){
+                                   String className = gsrsRestApiAnnotation.customIdHelperClassName();
+                                   try {
+                                       if(className ==null || className.isEmpty()){
+
+                                           idHelper = gsrsRestApiAnnotation.customIdHelperClass().newInstance();
 
 
-                                String idPlaceHolder = getMapping.idPlaceholder();
-                                Set<String> updatedPatterns = new LinkedHashSet<>();
-                                for(String route : apiPattern.getPatterns()) {
-                                    String updatedRoute = route.replace(idPlaceHolder, IdRegex);
-                                    System.out.println("updated route : " + route + "  -> " + updatedRoute);
-                                    updatedPatterns.add(updatedRoute);
+                                       }else{
+                                           idHelper = (IdHelper) ClassUtils.forName(className, getClass().getClassLoader()).newInstance();
+                                       }
+                                   } catch (Exception e) {
+                                       e.printStackTrace();
+                                       throw new IllegalStateException("error instantiating idHelper class", e);
+                                   }
+                                   //inject anything if needed
+                                   AutowireHelper.getInstance().autowire(idHelper);
+                               }else{
+                                   idHelper= commonIdHelper;
+                               }
 
-                                }
+                               String idPlaceHolder = getMapping.idPlaceholder();
+                               String notIdPlaceHolder = getMapping.notIdPlaceholder();
+                               Set<String> updatedPatterns = new LinkedHashSet<>();
+                               for(String route : apiPattern.getPatterns()) {
+                                   String updatedRoute = idHelper.replaceId(route, idPlaceHolder);
+                                   updatedRoute = idHelper.replaceInverseId(updatedRoute, notIdPlaceHolder);
+                                   System.out.println("updated route : " + route + "  -> " + updatedRoute);
+                                   updatedPatterns.add(updatedRoute);
+
+                               }
                                apiPattern = new PatternsRequestCondition(updatedPatterns.toArray(new String[updatedPatterns.size()]));
 
                             }
@@ -96,13 +119,35 @@ public class WebConfig {
                                 if (gsrsRestApiAnnotation != null) {
 
 
-                                    String IdRegex = gsrsRestApiAnnotation.idRegex();
+                                    CommonIDRegexes commonIdHelper = gsrsRestApiAnnotation.idHelper();
+                                    IdHelper idHelper;
+                                    if(commonIdHelper ==CommonIDRegexes.CUSTOM){
+                                        String className = gsrsRestApiAnnotation.customIdHelperClassName();
+                                        try {
+                                            if(className ==null || className.isEmpty()){
 
+                                                    idHelper = gsrsRestApiAnnotation.customIdHelperClass().newInstance();
+
+
+                                            }else{
+                                                idHelper = (IdHelper) ClassUtils.forName(className, getClass().getClassLoader()).newInstance();
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            throw new IllegalStateException("error instantiating idHelper class", e);
+                                        }
+                                        //inject anything if needed
+                                        AutowireHelper.getInstance().autowire(idHelper);
+                                    }else{
+                                        idHelper= commonIdHelper;
+                                    }
 
                                     String idPlaceHolder = postMapping.idPlaceholder();
+                                    String notIdPlaceHolder = postMapping.notIdPlaceholder();
                                     Set<String> updatedPatterns = new LinkedHashSet<>();
                                     for(String route : apiPattern.getPatterns()) {
-                                        String updatedRoute = route.replace(idPlaceHolder, IdRegex);
+                                        String updatedRoute = idHelper.replaceId(route, idPlaceHolder);
+                                        updatedRoute = idHelper.replaceInverseId(updatedRoute, notIdPlaceHolder);
                                         System.out.println("updated route : " + route + "  -> " + updatedRoute);
                                         updatedPatterns.add(updatedRoute);
 

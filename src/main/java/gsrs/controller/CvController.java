@@ -14,10 +14,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-@GsrsRestApiController(context ="vocabularies",  idRegex = CommonIDRegexes.NUMBER)
+@GsrsRestApiController(context ="vocabularies",  idHelper = CommonIDRegexes.NUMBER)
 public class CvController extends GsrsEntityController<ControlledVocabulary, Long> {
 
+    private static Pattern NUMBER_PATTERN = Pattern.compile("^"+CommonIDRegexes.NUMBER+"$");
     private static Set<String> fragmentDomains;
     private static Set<String> codeSystemDomains;
     static {
@@ -132,7 +135,18 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
 
     @Override
     public Optional<ControlledVocabulary> flexLookup(String someKindOfId) {
-        return get(Long.parseLong(someKindOfId));
+        Matcher matcher = NUMBER_PATTERN.matcher(someKindOfId);
+        if(matcher.find()){
+            //is an id
+            return get(parseIdFromString(someKindOfId));
+        }
+        //is the string a domain?
+        List<ControlledVocabulary> list = repository.findByDomain(someKindOfId);
+        if(list.isEmpty()){
+            return Optional.empty();
+        }
+        //get first one?
+        return Optional.ofNullable(list.get(0));
     }
 
 }

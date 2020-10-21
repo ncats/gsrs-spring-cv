@@ -52,6 +52,16 @@ public abstract class GsrsEntityController<T, I> {
         //TODO handle error_code param to make it 500 ?
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+    @GsrsRestApiGetMapping("/{id:$NOT_ID}" )
+    public ResponseEntity<Object> getByFlexId(@PathVariable String id){
+        Optional<T> obj = flexLookup(id);
+        System.out.println("found obj =" + obj);
+        if(obj.isPresent()){
+            return new ResponseEntity<>(obj.get(), HttpStatus.OK);
+        }
+        //TODO handle error_code param to make it 500 ?
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
     /*
       CREATE_OPERATION(new Operation("create")),
         VALIDATE_OPERATION(new Operation("validate")),
