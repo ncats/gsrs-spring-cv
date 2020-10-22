@@ -2,32 +2,40 @@ package gsrs.controller;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
 public abstract class GsrsEntityController<T, I> {
 
-    abstract T fromJson(JsonNode json) throws IOException;
+    @Autowired
+    private GsrsControllerConfiguration gsrsControllerConfiguration;
 
-    abstract List<T> fromJsonList(JsonNode list) throws IOException;
+    protected abstract T fromJson(JsonNode json) throws IOException;
 
-    abstract JsonNode toJson(T t) throws IOException;
+    protected abstract List<T> fromJsonList(JsonNode list) throws IOException;
 
-    abstract T create(T t);
+    protected abstract JsonNode toJson(T t) throws IOException;
 
-    abstract long count();
+    protected abstract T create(T t);
 
-    abstract Optional<T> get(I id);
+    protected abstract long count();
 
-    abstract I parseIdFromString(String idAsString);
+    protected abstract Optional<T> get(I id);
 
-    abstract Optional<T> flexLookup(String someKindOfId);
+    protected abstract I parseIdFromString(String idAsString);
+
+    protected abstract Optional<T> flexLookup(String someKindOfId);
 
     @GsrsRestApiPostMapping
     public ResponseEntity<Object> createEntity(@RequestBody JsonNode newEntityJson) throws IOException {
@@ -42,25 +50,27 @@ public abstract class GsrsEntityController<T, I> {
         return count();
     }
 
+
+
+
+
     @GsrsRestApiGetMapping(value = {"/{id:$ID}", "({id:$ID})"})
-    public ResponseEntity<Object> getById(@PathVariable String id){
+    public ResponseEntity<Object> getById(@PathVariable String id, @RequestParam Map<String, String> queryParameters){
         Optional<T> obj = get(parseIdFromString(id));
         System.out.println("found obj =" + obj);
         if(obj.isPresent()){
             return new ResponseEntity<>(obj.get(), HttpStatus.OK);
         }
-        //TODO handle error_code param to make it 500 ?
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return gsrsControllerConfiguration.handleNotFound(queryParameters);
     }
     @GsrsRestApiGetMapping(value = {"/{id:$NOT_ID}", "({id:$NOT_ID})"} )
-    public ResponseEntity<Object> getByFlexId(@PathVariable String id){
+    public ResponseEntity<Object> getByFlexId(@PathVariable String id, @RequestParam Map<String, String> queryParameters){
         Optional<T> obj = flexLookup(id);
         System.out.println("found obj =" + obj);
         if(obj.isPresent()){
             return new ResponseEntity<>(obj.get(), HttpStatus.OK);
         }
-        //TODO handle error_code param to make it 500 ?
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return gsrsControllerConfiguration.handleNotFound(queryParameters);
     }
     /*
       CREATE_OPERATION(new Operation("create")),

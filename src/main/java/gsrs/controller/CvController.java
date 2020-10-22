@@ -19,16 +19,17 @@ import java.util.regex.Pattern;
 public class CvController extends GsrsEntityController<ControlledVocabulary, Long> {
 
     private static Pattern NUMBER_PATTERN = Pattern.compile("^"+ IdHelpers.NUMBER.getRegexAsString()+"$");
+    //these fields are used to figure out which ControlledVocabulary subclass to use
     private static Set<String> fragmentDomains;
     private static Set<String> codeSystemDomains;
     static {
-        fragmentDomains = new HashSet<String>();
+        fragmentDomains = new HashSet<>();
         fragmentDomains.add("NUCLEIC_ACID_SUGAR");
         fragmentDomains.add("NUCLEIC_ACID_LINKAGE");
         fragmentDomains.add("NUCLEIC_ACID_BASE");
         fragmentDomains.add("AMINO_ACID_RESIDUE");
 
-        codeSystemDomains = new HashSet<String>();
+        codeSystemDomains = new HashSet<>();
         codeSystemDomains.add("CODE_SYSTEM");
         codeSystemDomains.add("DOCUMENT_TYPE");
     }
@@ -40,18 +41,18 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
     private ObjectMapper objectMapper;
 
     @Override
-    Long parseIdFromString(String idAsString) {
+    protected Long parseIdFromString(String idAsString) {
         return Long.parseLong(idAsString);
     }
 
     @Override
-    public ControlledVocabulary fromJson(JsonNode json) throws IOException {
+    protected ControlledVocabulary fromJson(JsonNode json) throws IOException {
         return adaptSingleRecord(json);
 
     }
 
     @Override
-    public List<ControlledVocabulary> fromJsonList(JsonNode list) throws IOException {
+    protected List<ControlledVocabulary> fromJsonList(JsonNode list) throws IOException {
         List<ControlledVocabulary> adaptedCvs = new ArrayList<>(list.size());
         for(JsonNode cvValue: list){
 
@@ -110,27 +111,27 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
         }
     }
     @Override
-    public JsonNode toJson(ControlledVocabulary controlledVocabulary) throws IOException {
+    protected JsonNode toJson(ControlledVocabulary controlledVocabulary) throws IOException {
         return objectMapper.valueToTree(controlledVocabulary);
     }
 
     @Override
-    public ControlledVocabulary create(ControlledVocabulary controlledVocabulary) {
+    protected ControlledVocabulary create(ControlledVocabulary controlledVocabulary) {
         return repository.save(controlledVocabulary);
     }
 
     @Override
-    public long count() {
+    protected long count() {
         return repository.count();
     }
 
     @Override
-    public Optional<ControlledVocabulary> get(Long id) {
+    protected Optional<ControlledVocabulary> get(Long id) {
         return repository.findById(id);
     }
 
     @Override
-    public Optional<ControlledVocabulary> flexLookup(String someKindOfId) {
+    protected Optional<ControlledVocabulary> flexLookup(String someKindOfId) {
         Matcher matcher = NUMBER_PATTERN.matcher(someKindOfId);
         if(matcher.find()){
             //is an id - this shouldn't happen anymore since we changed the routing to ignore ID
