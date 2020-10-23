@@ -1,5 +1,6 @@
 package ix.ginas.models.v1;
 
+import com.example.demo.GsrsAnalyzers;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -13,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.search.engine.backend.types.Aggregable;
 import org.hibernate.search.engine.backend.types.Searchable;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
@@ -51,7 +53,7 @@ public class ControlledVocabulary extends IxModel {
 	
     @Column(unique = true)
     @Indexable(name = "Domain", facet = true)
-    @GenericField(name = "Domain", searchable = Searchable.YES, aggregable = Aggregable.YES)
+    @FullTextField(name = "Domain", searchable = Searchable.YES, analyzer = GsrsAnalyzers.DEFAULT_NAME)
     public String domain;
 
 
