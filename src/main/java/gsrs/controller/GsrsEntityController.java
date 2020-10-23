@@ -2,7 +2,6 @@ package gsrs.controller;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,21 +75,21 @@ public abstract class GsrsEntityController<T, I> {
                 Argument.of(0, int.class, "skip"),
                 Argument.of(0, int.class, "fdim"))),
      */
-    @GsrsRestApiGetMapping("/search")
-    public ResponseEntity<Object> search(@RequestParam("q") String query,
-                                         @RequestParam("top") Optional<Integer> top,
-                                         @RequestParam("skip") Optional<Integer> skip,
-                                         @RequestParam("fdim") Optional<Integer> fdim,
-                                         @RequestParam Map<String, String> queryParameters){
+    @GsrsRestApiGetMapping(value = "/search", apiVersions = 1)
+    public ResponseEntity<Object> searchV1(@RequestParam("q") String query,
+                                           @RequestParam("top") Optional<Integer> top,
+                                           @RequestParam("skip") Optional<Integer> skip,
+                                           @RequestParam("fdim") Optional<Integer> fdim,
+                                           @RequestParam Map<String, String> queryParameters){
 
-        List<T> hits = indexSearch(query, top, skip, fdim);
+        List<T> hits = indexSearchV1(query, top, skip, fdim);
         if(hits==null || hits.isEmpty()){
             return gsrsControllerConfiguration.handleNotFound(queryParameters);
         }
         return new ResponseEntity<>(hits, HttpStatus.OK);
     }
 
-    protected abstract List<T> indexSearch(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim);
+    protected abstract List<T> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim);
     /*
       CREATE_OPERATION(new Operation("create")),
         VALIDATE_OPERATION(new Operation("validate")),

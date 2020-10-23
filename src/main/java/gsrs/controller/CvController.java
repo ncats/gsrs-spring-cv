@@ -132,7 +132,7 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
 
     }
     @Override
-    protected List<ControlledVocabulary> indexSearch(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim) {
+    protected List<ControlledVocabulary> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim) {
         SearchSession session = searchService.createSearchSession();
         List<ControlledVocabulary> dslHits = parseQueryIntoMatch(query , session).hits();
 

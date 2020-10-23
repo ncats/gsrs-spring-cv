@@ -14,6 +14,9 @@ import java.lang.annotation.Target;
         method = {RequestMethod.POST}
 )
 public @interface GsrsRestApiPostMapping {
+
+    int[] apiVersions() default {1, 2};
+
     @AliasFor(annotation = RequestMapping.class, value = "value")
     String[] value() default {};
 

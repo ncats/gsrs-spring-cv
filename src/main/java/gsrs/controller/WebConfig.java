@@ -25,7 +25,7 @@ public class WebConfig {
             public RequestMappingHandlerMapping getRequestMappingHandlerMapping() {
 
                 return new RequestMappingHandlerMapping() {
-                    private final static String API_BASE_PATH = "api/v1";
+                    private final static String API_BASE_PATH = "api/v";
 
 
                     @Override
@@ -54,18 +54,32 @@ public class WebConfig {
                         GsrsRestApiGetMapping getMapping = method.getAnnotation(GsrsRestApiGetMapping.class);
                         GsrsRestApiPostMapping postMapping=null;
                         System.out.println("\t" + getMapping);
+                        int[] versions=new int[]{1};
                         if(getMapping ==null){
                             //check for post
                             postMapping = method.getAnnotation(GsrsRestApiPostMapping.class);
-
+                            if(postMapping !=null) {
+                                versions = postMapping.apiVersions();
+                            }
+                        }else{
+                            versions = getMapping.apiVersions();
                         }
 
                         //we want to do 2 things
                         //1. add the api base to everything
                         //2. if there's an ID use the regex for that entity type
-                        PatternsRequestCondition apiPattern = new PatternsRequestCondition(API_BASE_PATH)
-                                .combine(mapping.getPatternsCondition());
+                        Set<String> apiBasePatterns = new HashSet<>();
+                        List<Set<String>> apiBasesByVersions = new ArrayList<>();
+                        for(int i=0; i< versions.length; i++) {
+                            Set<String> patterns = new PatternsRequestCondition(API_BASE_PATH + versions[i])
+                                    .combine(mapping.getPatternsCondition()).getPatterns();
+                            apiBasePatterns.addAll(patterns);
+                            apiBasesByVersions.add(patterns);
+                        }
+                        System.out.println(apiBasesByVersions);
 
+                        //this will be overridden if we have get or post mappings
+                        PatternsRequestCondition apiPattern = new PatternsRequestCondition(apiBasePatterns.toArray(new String[apiBasePatterns.size()]));
                         if (getMapping != null) {
                            if (gsrsRestApiAnnotation != null) {
 
@@ -102,22 +116,27 @@ public class WebConfig {
                                // for example api/v1/context( id)  not api/v1/context/( id)
                                //so check to see if we put a leading slash and if not get rid
                                // of the leading slash which is now a middle slash
-                               Iterator<String> patternIter = apiPattern.getPatterns().iterator();
 
-                               Iterator<String> definedInAnnotation = Arrays.asList(getMapping.value()).iterator();
+                               //now we do this for each version too!
                                Set<String> adjustedPatterns = new HashSet<>();
-                               while(patternIter.hasNext()){
-                                   String pattern = patternIter.next();
-                                   String defined = definedInAnnotation.next();
-                                   if(defined.charAt(0) != '/') {
-                                       int offset = pattern.lastIndexOf(defined);
-                                       if (offset > -1 && pattern.charAt(offset-1) == '/') {
+                               for(Set<String> basePatternPerVersion : apiBasesByVersions) {
+                                   Iterator<String> patternIter = basePatternPerVersion.iterator();
 
-                                           String before = pattern.substring(0, offset-1);
-                                           adjustedPatterns.add(before + defined);
+                                   Iterator<String> definedInAnnotation = Arrays.asList(getMapping.value()).iterator();
+
+                                   while (patternIter.hasNext()) {
+                                       String pattern = patternIter.next();
+                                       String defined = definedInAnnotation.next();
+                                       if (defined.charAt(0) != '/') {
+                                           int offset = pattern.lastIndexOf(defined);
+                                           if (offset > -1 && pattern.charAt(offset - 1) == '/') {
+
+                                               String before = pattern.substring(0, offset - 1);
+                                               adjustedPatterns.add(before + defined);
+                                           }
+                                       } else {
+                                           adjustedPatterns.add(pattern);
                                        }
-                                   }else{
-                                       adjustedPatterns.add(pattern);
                                    }
                                }
                                for(String route : adjustedPatterns) {
@@ -166,7 +185,43 @@ public class WebConfig {
                                     String idPlaceHolder = postMapping.idPlaceholder();
                                     String notIdPlaceHolder = postMapping.notIdPlaceholder();
                                     Set<String> updatedPatterns = new LinkedHashSet<>();
-                                    for(String route : apiPattern.getPatterns()) {
+                                    //Spring adds leading / to the paths if you forgot to put it
+                                    //but GSRS doesn't want to have it sometimes
+                                    // for example api/v1/context( id)  not api/v1/context/( id)
+                                    //so check to see if we put a leading slash and if not get rid
+                                    // of the leading slash which is now a middle slash
+
+                                    //now we do this for each version too!
+                                    Set<String> adjustedPatterns = new HashSet<>();
+                                    for(Set<String> basePatternPerVersion : apiBasesByVersions) {
+
+                                        Iterator<String> definedInAnnotation = Arrays.asList(postMapping.value()).iterator();
+                                        if(!definedInAnnotation.hasNext()){
+                                            //no route this is probably a post to the root so nothing to adjust
+                                            adjustedPatterns.addAll(basePatternPerVersion);
+                                            continue;
+                                        }
+                                        Iterator<String> patternIter = basePatternPerVersion.iterator();
+
+                                        while (patternIter.hasNext()) {
+                                            String pattern = patternIter.next();
+                                            System.out.println(pattern);
+                                            String defined = definedInAnnotation.next();
+                                            if (defined.charAt(0) != '/') {
+                                                int offset = pattern.lastIndexOf(defined);
+                                                if (offset > -1 && pattern.charAt(offset - 1) == '/') {
+
+                                                    String before = pattern.substring(0, offset - 1);
+                                                    adjustedPatterns.add(before + defined);
+                                                }
+                                            } else {
+                                                adjustedPatterns.add(pattern);
+                                            }
+                                        }
+                                    }
+
+
+                                    for(String route : adjustedPatterns) {
                                         String updatedRoute = idHelper.replaceId(route, idPlaceHolder);
                                         updatedRoute = idHelper.replaceInverseId(updatedRoute, notIdPlaceHolder);
                                         System.out.println("updated route : " + route + "  -> " + updatedRoute);
