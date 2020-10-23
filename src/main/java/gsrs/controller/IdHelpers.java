@@ -3,7 +3,7 @@ package gsrs.controller;
 public enum IdHelpers implements IdHelper {
 
     NUMBER("[0-9]+", "[^0-9]+"),
-    STRING_NO_WHITESPACE("\\W+"),
+    STRING_NO_WHITESPACE("\\S+"),
     UUID( "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"),
     CUSTOM(".*")
     ;

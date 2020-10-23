@@ -65,7 +65,7 @@ public class GsrsControllerConfiguration {
     }
     public ErrorInfo createErrorStatusBody(Throwable t, int status,  WebRequest request){
         int statusToUse = overrideErrorCodeIfNeeded(status, request);
-        Object body = createStatusJson("not found", status);
+        Object body = createStatusJson("not found", statusToUse);
         return ErrorInfo.builder()
                             .body(body)
                             .status(HttpStatus.valueOf(statusToUse))

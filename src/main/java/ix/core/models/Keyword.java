@@ -6,8 +6,10 @@ import java.util.Objects;
 @Entity
 @DiscriminatorValue("KEY")
 @DynamicFacet(label="label", value="term")
+@Indexable
 public class Keyword extends Value {
     @Column(length=255)
+
     public String term;
     @Lob
     @Basic(fetch=FetchType.EAGER)

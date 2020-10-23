@@ -9,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,7 +55,6 @@ public abstract class GsrsEntityController<T, I> {
     @GsrsRestApiGetMapping(value = {"/{id:$ID}", "({id:$ID})"})
     public ResponseEntity<Object> getById(@PathVariable String id, @RequestParam Map<String, String> queryParameters){
         Optional<T> obj = get(parseIdFromString(id));
-        System.out.println("found obj =" + obj);
         if(obj.isPresent()){
             return new ResponseEntity<>(obj.get(), HttpStatus.OK);
         }
@@ -66,12 +63,34 @@ public abstract class GsrsEntityController<T, I> {
     @GsrsRestApiGetMapping(value = {"/{id:$NOT_ID}", "({id:$NOT_ID})"} )
     public ResponseEntity<Object> getByFlexId(@PathVariable String id, @RequestParam Map<String, String> queryParameters){
         Optional<T> obj = flexLookup(id);
-        System.out.println("found obj =" + obj);
         if(obj.isPresent()){
             return new ResponseEntity<>(obj.get(), HttpStatus.OK);
         }
         return gsrsControllerConfiguration.handleNotFound(queryParameters);
     }
+
+    /*
+     SEARCH_OPERATION(new Operation("search",
+                Argument.of(null, String.class, "query"),
+                Argument.of(0, int.class, "top"),
+                Argument.of(0, int.class, "skip"),
+                Argument.of(0, int.class, "fdim"))),
+     */
+    @GsrsRestApiGetMapping("/search")
+    public ResponseEntity<Object> search(@RequestParam("q") String query,
+                                         @RequestParam("top") Optional<Integer> top,
+                                         @RequestParam("skip") Optional<Integer> skip,
+                                         @RequestParam("fdim") Optional<Integer> fdim,
+                                         @RequestParam Map<String, String> queryParameters){
+
+        List<T> hits = indexSearch(query, top, skip, fdim);
+        if(hits==null || hits.isEmpty()){
+            return gsrsControllerConfiguration.handleNotFound(queryParameters);
+        }
+        return new ResponseEntity<>(hits, HttpStatus.OK);
+    }
+
+    protected abstract List<T> indexSearch(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim);
     /*
       CREATE_OPERATION(new Operation("create")),
         VALIDATE_OPERATION(new Operation("validate")),

@@ -11,6 +11,10 @@ import ix.ginas.models.serialization.KeywordDeserializer;
 import ix.ginas.models.serialization.KeywordListSerializer;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.search.engine.backend.types.Aggregable;
+import org.hibernate.search.engine.backend.types.Searchable;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -25,6 +29,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@Indexed
 public class ControlledVocabulary extends IxModel {
 
     private static final long serialVersionUID = 5455592961232451608L;
@@ -46,6 +51,7 @@ public class ControlledVocabulary extends IxModel {
 	
     @Column(unique = true)
     @Indexable(name = "Domain", facet = true)
+    @GenericField(name = "Domain", searchable = Searchable.YES, aggregable = Aggregable.YES)
     public String domain;
 
 
@@ -60,6 +66,7 @@ public class ControlledVocabulary extends IxModel {
     @JsonDeserialize(contentUsing = KeywordDeserializer.class)
     @Indexable(name = "Field")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
     public List<Keyword> fields = new ArrayList<Keyword>();
 
     public boolean editable = true;

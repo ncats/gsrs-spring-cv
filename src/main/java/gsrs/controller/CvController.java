@@ -3,12 +3,22 @@ package gsrs.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import gov.nih.ncats.common.sneak.Sneak;
+import gsrs.indexer.CvSearchService;
 import gsrs.repository.ControlledVocabularyRepository;
 import ix.ginas.models.v1.CodeSystemControlledVocabulary;
 import ix.ginas.models.v1.ControlledVocabulary;
 import ix.ginas.models.v1.FragmentControlledVocabulary;
 import ix.ginas.models.v1.VocabularyTerm;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.hibernate.search.backend.lucene.LuceneExtension;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.util.*;
@@ -40,6 +50,9 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private CvSearchService searchService;
+
     @Override
     protected Long parseIdFromString(String idAsString) {
         return Long.parseLong(idAsString);
@@ -65,6 +78,53 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
         return adaptedCvs;
     }
 
+    @Override
+    protected List<ControlledVocabulary> indexSearch(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim) {
+        SearchSession session = searchService.createSearchSession();
+        List<ControlledVocabulary> dslHits =           session.search(ControlledVocabulary.class)
+                    .where( f -> f.match()
+                            .fields( "Domain" )
+                            .matching( "ACCESS_GROUP" )
+                    )
+                .fetchAllHits();
+
+
+       System.out.println("dslHits = " + dslHits);
+
+        String[] fields = parseFieldsFrom(query);
+        QueryParser parser;
+        if(fields.length==1){
+            parser = new QueryParser(fields[0], new KeywordAnalyzer());
+        }else{
+            parser = new MultiFieldQueryParser(fields, new KeywordAnalyzer());
+        }
+        System.out.println("parsed fields =" + Arrays.toString(fields));
+        List<ControlledVocabulary> hits = session.search( ControlledVocabulary.class )
+                .extension( LuceneExtension.get() )
+                .where( f -> {
+                    try {
+                        return f.fromLuceneQuery( parser.parse(query) );
+                    } catch (ParseException e) {
+                        return Sneak.sneakyThrow(new RuntimeException(e));
+                    }
+                })
+                .fetchHits(skip.orElse(null), top.orElse(null));
+
+        System.out.println("found # hits = " + hits.size());
+        return hits;
+
+    }
+
+    private String[] parseFieldsFrom(String query) {
+        Pattern pattern = Pattern.compile("(\\S+):");
+        Matcher matcher = pattern.matcher(query);
+        List<String> fields = new ArrayList<>();
+        while(matcher.find()){
+            //TODO here's where we could convert the '.' separators vs the '_' separators
+            fields.add(matcher.group(1));
+        }
+        return fields.toArray(new String[fields.size()]);
+    }
 
     private ControlledVocabulary adaptSingleRecord(JsonNode cvValue) throws IOException {
         try {
