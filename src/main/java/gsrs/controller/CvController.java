@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import gov.nih.ncats.common.sneak.Sneak;
+import gsrs.CvUtils;
 import gsrs.indexer.CvSearchService;
 import gsrs.repository.ControlledVocabularyRepository;
 import ix.ginas.models.v1.CodeSystemControlledVocabulary;
@@ -39,20 +40,6 @@ import java.util.regex.Pattern;
 public class CvController extends GsrsEntityController<ControlledVocabulary, Long> {
 
     private static Pattern NUMBER_PATTERN = Pattern.compile("^"+ IdHelpers.NUMBER.getRegexAsString()+"$");
-    //these fields are used to figure out which ControlledVocabulary subclass to use
-    private static Set<String> fragmentDomains;
-    private static Set<String> codeSystemDomains;
-    static {
-        fragmentDomains = new HashSet<>();
-        fragmentDomains.add("NUCLEIC_ACID_SUGAR");
-        fragmentDomains.add("NUCLEIC_ACID_LINKAGE");
-        fragmentDomains.add("NUCLEIC_ACID_BASE");
-        fragmentDomains.add("AMINO_ACID_RESIDUE");
-
-        codeSystemDomains = new HashSet<>();
-        codeSystemDomains.add("CODE_SYSTEM");
-        codeSystemDomains.add("DOCUMENT_TYPE");
-    }
 
     @Autowired
     private ControlledVocabularyRepository repository;
@@ -75,22 +62,13 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
 
     @Override
     protected ControlledVocabulary fromJson(JsonNode json) throws IOException {
-        return adaptSingleRecord(json);
+        return CvUtils.adaptSingleRecord(json, objectMapper);
 
     }
 
     @Override
     protected List<ControlledVocabulary> fromJsonList(JsonNode list) throws IOException {
-        List<ControlledVocabulary> adaptedCvs = new ArrayList<>(list.size());
-        for(JsonNode cvValue: list){
-
-            ControlledVocabulary cv = adaptSingleRecord(cvValue);
-            //the Play version called cv.save() here we won't
-            adaptedCvs.add(cv);
-
-
-        }
-        return adaptedCvs;
+        return CvUtils.adaptList(list, objectMapper);
     }
 
     private SearchResult<ControlledVocabulary> parseQueryIntoMatch(String query, SearchSession session) {
@@ -347,50 +325,9 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
         return fields.toArray(new String[fields.size()]);
     }
 
-    private ControlledVocabulary adaptSingleRecord(JsonNode cvValue) throws IOException {
-        try {
-            String domain = cvValue.at("/domain").asText();
-            JsonNode vtype = cvValue.at("/vocabularyTermType");
-            String termType = null;
-            System.out.println("cvValue = " + cvValue);
-            System.out.println("vType =  " + vtype);
-            if (!vtype.isTextual()) {
-                ObjectNode objn = (ObjectNode) cvValue;
-                //Sometimes stored as an object, instead of a text value
-                objn.set("vocabularyTermType", cvValue.at("/vocabularyTermType/value"));
-            }
-
-            termType = cvValue.at("/vocabularyTermType").asText();
-
-            ControlledVocabulary cv = (ControlledVocabulary) objectMapper.treeToValue(cvValue, objectMapper.getClass().getClassLoader().loadClass(termType));
-            //if there was an ID with this object, get rid of it
-            //it was added by mistake
-            cv.id = null;
-
-            if (cv.terms != null) { //Terms can be null sometimes now
-                for (VocabularyTerm vt : cv.terms) {
-                    vt.id = null;
-                }
-            }
-
-            cv.setVocabularyTermType(getCVClass(domain).getName());
-            return cv;
-        }catch(ClassNotFoundException e){
-            throw new IOException("error creating Controlled Vocabulary instance", e);
-        }
-    }
-
-    private static Class<? extends ControlledVocabulary> getCVClass (String domain){
 
 
-        if(fragmentDomains.contains(domain)){
-            return FragmentControlledVocabulary.class;
-        }else if(codeSystemDomains.contains(domain)){
-            return CodeSystemControlledVocabulary.class;
-        }else{
-            return ControlledVocabulary.class;
-        }
-    }
+
     @Override
     protected JsonNode toJson(ControlledVocabulary controlledVocabulary) throws IOException {
         return objectMapper.valueToTree(controlledVocabulary);
