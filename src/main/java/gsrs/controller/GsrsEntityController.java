@@ -1,7 +1,13 @@
 package gsrs.controller;
 
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.Data;
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
+import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +39,8 @@ public abstract class GsrsEntityController<T, I> {
     protected abstract I parseIdFromString(String idAsString);
 
     protected abstract Optional<T> flexLookup(String someKindOfId);
+
+    protected abstract Class<T> getEntityClass();
 
     @GsrsRestApiPostMapping
     public ResponseEntity<Object> createEntity(@RequestBody JsonNode newEntityJson) throws IOException {
@@ -67,7 +75,76 @@ public abstract class GsrsEntityController<T, I> {
         }
         return gsrsControllerConfiguration.handleNotFound(queryParameters);
     }
+    @Data
+    public static class LuceneSearchRequestField{
+        private String field;
+        private String matches;
 
+    }
+    @JsonTypeInfo(
+            use = JsonTypeInfo.Id.NAME,
+            property = "type",
+            defaultImpl = LuceneSearchRequestOr.class
+    )
+    @JsonSubTypes({
+            @JsonSubTypes.Type(value = LuceneSearchRequestOr.class, name = "or"),
+            @JsonSubTypes.Type(value = LuceneSearchRequestAnd.class, name = "and"),
+            @JsonSubTypes.Type(value = LuceneSearchRequestLeaf.class, name = "matches")
+    })
+    public interface LuceneSearchRequestOp {
+
+
+
+        PredicateFinalStep doIt(SearchPredicateFactory spf);
+    }
+    @Data
+    public class LuceneSearchRequest{
+        private LuceneSearchRequestOp op;
+
+        public PredicateFinalStep doIt(SearchPredicateFactory spf){
+            return op.doIt(spf);
+        }
+    }
+    @Data
+    public static class LuceneSearchRequestOr implements LuceneSearchRequestOp {
+        private List<LuceneSearchRequestOp> opList;
+
+        @Override
+        public PredicateFinalStep doIt(SearchPredicateFactory spf) {
+            BooleanPredicateClausesStep<?> step =spf.bool();
+            for(LuceneSearchRequestOp f : opList) {
+                step = step.should( f.doIt(spf));
+            }
+            return step;
+        }
+    }
+    @Data
+    public static class LuceneSearchRequestLeaf implements LuceneSearchRequestOp {
+        private LuceneSearchRequestField value;
+
+        @Override
+        public PredicateFinalStep doIt(SearchPredicateFactory spf) {
+
+            return spf.simpleQueryString().field(value.getField())
+                    .matching(value.getMatches());
+
+
+        }
+    }
+
+    @Data
+    public static class LuceneSearchRequestAnd implements LuceneSearchRequestOp {
+        private List<LuceneSearchRequestOp> opList;
+
+        @Override
+        public PredicateFinalStep doIt(SearchPredicateFactory spf) {
+            BooleanPredicateClausesStep<?> step =spf.bool();
+            for(LuceneSearchRequestOp f : opList) {
+                step = step.must(f.doIt(spf));
+            }
+            return step;
+        }
+    }
     /*
      SEARCH_OPERATION(new Operation("search",
                 Argument.of(null, String.class, "query"),
@@ -83,13 +160,25 @@ public abstract class GsrsEntityController<T, I> {
                                            @RequestParam Map<String, String> queryParameters){
 
         List<T> hits = indexSearchV1(query, top, skip, fdim);
-        if(hits==null || hits.isEmpty()){
-            return gsrsControllerConfiguration.handleNotFound(queryParameters);
-        }
+        //even if list is empty we want to return an empty list not a 404
         return new ResponseEntity<>(hits, HttpStatus.OK);
     }
 
     protected abstract List<T> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim);
+    protected abstract List<T> indexSearchV2(LuceneSearchRequestOp op, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim);
+
+    @GsrsRestApiPostMapping(value = "/search", apiVersions = 2)
+    public ResponseEntity<Object> searchV2(@RequestBody LuceneSearchRequestOp op,
+                                           @RequestParam("top") Optional<Integer> top,
+                                           @RequestParam("skip") Optional<Integer> skip,
+                                           @RequestParam("fdim") Optional<Integer> fdim,
+                                           @RequestParam Map<String, String> queryParameters){
+
+        List<T> hits = indexSearchV2(op, top, skip, fdim);
+        //even if list is empty we want to return an empty list not a 404
+        return new ResponseEntity<>(hits, HttpStatus.OK);
+    }
+
     /*
       CREATE_OPERATION(new Operation("create")),
         VALIDATE_OPERATION(new Operation("validate")),

@@ -64,6 +64,11 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
     private CvSearchService searchService;
 
     @Override
+    protected Class<ControlledVocabulary> getEntityClass() {
+        return ControlledVocabulary.class;
+    }
+
+    @Override
     protected Long parseIdFromString(String idAsString) {
         return Long.parseLong(idAsString);
     }
@@ -131,6 +136,17 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
 
 
     }
+
+    @Override
+    protected List<ControlledVocabulary> indexSearchV2(LuceneSearchRequestOp op, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim) {
+        SearchSession session = searchService.createSearchSession();
+
+        return session.search(ControlledVocabulary.class)
+                .where(f-> op.doIt(f))
+                .fetchHits(skip.orElse(null),top.orElse(null));
+
+    }
+
     @Override
     protected List<ControlledVocabulary> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim) {
         SearchSession session = searchService.createSearchSession();
