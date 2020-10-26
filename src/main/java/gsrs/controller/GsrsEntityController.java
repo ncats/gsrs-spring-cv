@@ -9,6 +9,7 @@ import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesS
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +43,8 @@ public abstract class GsrsEntityController<T, I> {
 
     protected abstract Class<T> getEntityClass();
 
+    protected abstract Page page(long offset, long numOfRecords);
+
     @GsrsRestApiPostMapping
     public ResponseEntity<Object> createEntity(@RequestBody JsonNode newEntityJson) throws IOException {
         T newEntity = fromJson(newEntityJson);
@@ -55,9 +58,28 @@ public abstract class GsrsEntityController<T, I> {
         return count();
     }
 
+    @GsrsRestApiGetMapping("")
+    public ResponseEntity<Object> page(@RequestParam(value = "top", defaultValue = "16") long top,
+                     @RequestParam(value = "skip", defaultValue = "0") long skip,
+                     @RequestParam Map<String, String> queryParameters){
 
+        Page<T> page = page(skip, top);
 
+        return new ResponseEntity<>(new PagedResult(page), HttpStatus.OK);
+    }
+    @Data
+    public static class PagedResult<T>{
+        private long total, count,skip, top;
+        private List<T> content;
 
+        public PagedResult(Page<T> page){
+            this.total = page.getTotalElements();
+            this.count= page.getNumberOfElements();
+            this.skip = page.getSize() * page.getNumber();
+            this.top = page.getSize();
+            content = page.toList();
+        }
+    }
 
     @GsrsRestApiGetMapping(value = {"/{id:$ID}", "({id:$ID})"})
     public ResponseEntity<Object> getById(@PathVariable String id, @RequestParam Map<String, String> queryParameters){

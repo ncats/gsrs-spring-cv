@@ -29,6 +29,9 @@ import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.search.query.dsl.HibernateOrmSearchQuerySelectStep;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -64,6 +67,12 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
     protected ControlledVocabulary fromJson(JsonNode json) throws IOException {
         return CvUtils.adaptSingleRecord(json, objectMapper);
 
+    }
+
+    @Override
+    protected Page page(long offset, long numOfRecords) {
+
+        return repository.findAll(new OffsetBasedPageRequest(offset, numOfRecords));
     }
 
     @Override

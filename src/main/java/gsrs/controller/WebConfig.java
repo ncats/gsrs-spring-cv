@@ -127,7 +127,8 @@ public class WebConfig {
                                    while (patternIter.hasNext()) {
                                        String pattern = patternIter.next();
                                        String defined = definedInAnnotation.next();
-                                       if (defined.charAt(0) != '/') {
+
+                                       if (!defined.isEmpty() && defined.charAt(0) != '/') {
                                            int offset = pattern.lastIndexOf(defined);
                                            if (offset > -1 && pattern.charAt(offset - 1) == '/') {
 
