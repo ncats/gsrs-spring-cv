@@ -42,11 +42,15 @@ public abstract class GsrsEntityController<T, I> {
 
     protected abstract Optional<T> flexLookup(String someKindOfId);
 
+    protected abstract Optional<I> flexLookupIdOnly(String someKindOfId);
+
     protected abstract Class<T> getEntityClass();
 
     protected abstract Page page(long offset, long numOfRecords, Sort sort);
 
-    @GsrsRestApiPostMapping
+    protected abstract void delete(I id);
+
+    @GsrsRestApiPostMapping()
     public ResponseEntity<Object> createEntity(@RequestBody JsonNode newEntityJson) throws IOException {
         T newEntity = fromJson(newEntityJson);
         //TODO add validation in later sprint
@@ -115,6 +119,27 @@ public abstract class GsrsEntityController<T, I> {
         }
         return gsrsControllerConfiguration.handleNotFound(queryParameters);
     }
+    @GsrsRestApiDeleteMapping(value = {"/{id:$ID}", "({id:$ID})"})
+    public ResponseEntity<Object> deleteById(@PathVariable String id, @RequestParam Map<String, String> queryParameters){
+        I parsedId = parseIdFromString(id);
+        return deleteEntity(parsedId);
+    }
+
+    private ResponseEntity<Object> deleteEntity(I parsedId) {
+        delete(parsedId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GsrsRestApiDeleteMapping(value = {"/{id:$NOT_ID}", "({id:$NOT_ID})"} )
+    public ResponseEntity<Object> deleteByFlexId(@PathVariable String id, @RequestParam Map<String, String> queryParameters){
+        Optional<I> idOptional = flexLookupIdOnly(id);
+        if(idOptional.isPresent()){
+
+            return deleteEntity(idOptional.get());
+        }
+        return gsrsControllerConfiguration.handleNotFound(queryParameters);
+    }
+
     @Data
     public static class LuceneSearchRequestField{
         private String field;

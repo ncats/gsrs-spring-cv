@@ -77,6 +77,11 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
     }
 
     @Override
+    protected void delete(Long id) {
+        repository.deleteById(id);
+    }
+
+    @Override
     protected List<ControlledVocabulary> fromJsonList(JsonNode list) throws IOException {
         return CvUtils.adaptList(list, objectMapper);
     }
@@ -373,5 +378,16 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
         //get first one?
         return Optional.ofNullable(list.get(0));
     }
+
+    @Override
+    protected Optional<Long> flexLookupIdOnly(String someKindOfId) {
+        //easiest way to avoid deduping data is to just do a full flex lookup and then return id
+        Optional<ControlledVocabulary> found = flexLookup(someKindOfId);
+        if(found.isPresent()){
+            return Optional.of(found.get().getId());
+        }
+        return Optional.empty();
+    }
+
 
 }
