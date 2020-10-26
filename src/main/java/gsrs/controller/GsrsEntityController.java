@@ -10,6 +10,7 @@ import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +44,7 @@ public abstract class GsrsEntityController<T, I> {
 
     protected abstract Class<T> getEntityClass();
 
-    protected abstract Page page(long offset, long numOfRecords);
+    protected abstract Page page(long offset, long numOfRecords, Sort sort);
 
     @GsrsRestApiPostMapping
     public ResponseEntity<Object> createEntity(@RequestBody JsonNode newEntityJson) throws IOException {
@@ -61,11 +62,28 @@ public abstract class GsrsEntityController<T, I> {
     @GsrsRestApiGetMapping("")
     public ResponseEntity<Object> page(@RequestParam(value = "top", defaultValue = "16") long top,
                      @RequestParam(value = "skip", defaultValue = "0") long skip,
+                     @RequestParam(value = "order", required = false) String order,
                      @RequestParam Map<String, String> queryParameters){
 
-        Page<T> page = page(skip, top);
+
+        Page<T> page = page(skip, top,parseSortFromOrderParam(order));
 
         return new ResponseEntity<>(new PagedResult(page), HttpStatus.OK);
+    }
+
+    private Sort parseSortFromOrderParam(String order){
+        //match Gsrs Play API
+        if(order ==null || order.trim().isEmpty()){
+            return Sort.sort(getEntityClass());
+        }
+        char firstChar = order.charAt(0);
+        if('$'==firstChar){
+            return Sort.by(Sort.Direction.DESC, order.substring(1));
+        }
+        if('^'==firstChar){
+            return Sort.by(Sort.Direction.ASC, order.substring(1));
+        }
+        return Sort.by(Sort.Direction.ASC, order);
     }
     @Data
     public static class PagedResult<T>{

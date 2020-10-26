@@ -31,6 +31,7 @@ import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.http.ResponseEntity;
 
@@ -70,9 +71,9 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
     }
 
     @Override
-    protected Page page(long offset, long numOfRecords) {
+    protected Page page(long offset, long numOfRecords, Sort sort) {
 
-        return repository.findAll(new OffsetBasedPageRequest(offset, numOfRecords));
+        return repository.findAll(new OffsetBasedPageRequest(offset, numOfRecords, sort));
     }
 
     @Override
