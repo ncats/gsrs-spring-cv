@@ -17,6 +17,7 @@ import org.hibernate.search.engine.backend.types.Searchable;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -53,12 +54,17 @@ public class ControlledVocabulary extends IxModel {
 	
     @Column(unique = true)
     @Indexable(name = "Domain", facet = true)
-    @FullTextField(name = "Domain", searchable = Searchable.YES, analyzer = GsrsAnalyzers.DEFAULT_NAME)
+    @KeywordField(name = "Domain", searchable = Searchable.YES)
     public String domain;
 
 
     public void setTerms(List<VocabularyTerm> terms) {
+
         this.terms = terms;
+        if(terms !=null){
+           terms.forEach(t -> t.setOwner(this));
+        }
+        setIsDirty("terms");
     }
 
     private String vocabularyTermType = ControlledVocabulary.class.getName();
@@ -79,6 +85,7 @@ public class ControlledVocabulary extends IxModel {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     //@JoinTable(name="ix_ginas_cv_terms")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @Basic(fetch= FetchType.EAGER)
     public List<VocabularyTerm> terms = new ArrayList<>();
 
     public VocabularyTerm getTermWithValue(String val) {
@@ -99,6 +106,7 @@ public class ControlledVocabulary extends IxModel {
     public  void addTerms(VocabularyTerm term) {
 
         this.terms.add(term);
+        term.setOwner(this);
         setIsDirty("terms");
     }
 

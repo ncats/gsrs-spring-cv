@@ -23,6 +23,7 @@ import org.springframework.test.context.ContextConfiguration;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,6 +66,24 @@ public class ControlledVocabRepositoryTest {
     public void saveCreatesId(){
 
         ControlledVocabulary sut = new ControlledVocabulary();
+       sut.setDomain("myDomain");
+        assertNull(sut.id);
+
+        Date date = new Date(timeTraveller.freezeTime());
+
+        ControlledVocabulary sut2 = repository.saveAndFlush(sut);
+
+        assertNotNull(sut2.id);
+        assertEquals(date.getTime(), sut.created.getTime());
+        assertEquals(date.getTime(), sut.modified.getTime());
+
+        assertEquals("myDomain", sut2.getDomain());
+    }
+
+    @Test
+    public void saveWithVocabTerm(){
+
+        ControlledVocabulary sut = new ControlledVocabulary();
         VocabularyTerm myVocabTerm = new VocabularyTermBuilder("myVocabTerm")
                 .build();
         sut.addTerms(myVocabTerm);
@@ -72,11 +91,17 @@ public class ControlledVocabRepositoryTest {
 
         Date date = new Date(timeTraveller.freezeTime());
 
-        repository.saveAndFlush(sut);
+        ControlledVocabulary sut2 =  repository.saveAndFlush(sut);
 
         assertNotNull(sut.id);
         assertEquals(date.getTime(), sut.created.getTime());
         assertEquals(date.getTime(), sut.modified.getTime());
+
+        List<VocabularyTerm> fetchedTerms = sut2.getTerms();
+        assertEquals(1, fetchedTerms.size());
+
+        assertEquals("myVocabTerm", fetchedTerms.get(0).getValue());
+;
     }
 
     @Test

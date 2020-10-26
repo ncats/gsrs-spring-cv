@@ -1,5 +1,6 @@
 package ix.ginas.models.v1;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import ix.core.SingleParent;
@@ -28,6 +29,7 @@ public class VocabularyTerm extends IxModel {
 	 * 
 	 */
 	@ManyToOne(cascade = CascadeType.PERSIST)
+    @JsonIgnore //ignore in json to avoid infinite recursion
 	private ControlledVocabulary owner;
 
 	

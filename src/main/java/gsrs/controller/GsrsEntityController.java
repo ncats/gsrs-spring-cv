@@ -175,6 +175,7 @@ public abstract class GsrsEntityController<T, I> {
                                            @RequestParam Map<String, String> queryParameters){
 
         List<T> hits = indexSearchV2(op, top, skip, fdim);
+
         //even if list is empty we want to return an empty list not a 404
         return new ResponseEntity<>(hits, HttpStatus.OK);
     }

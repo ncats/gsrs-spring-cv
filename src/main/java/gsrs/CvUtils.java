@@ -38,6 +38,7 @@ public final class CvUtils {
         for(JsonNode cvValue: cvList){
 
             ControlledVocabulary cv = adaptSingleRecord(cvValue, objectMapper);
+            System.out.println("cv terms = " + cv.getTerms());
             //the Play version called cv.save() here we won't
             adaptedCvs.add(cv);
 

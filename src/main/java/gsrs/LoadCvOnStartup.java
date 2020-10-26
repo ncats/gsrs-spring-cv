@@ -12,12 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
 import java.io.InputStream;
 import java.util.List;
 
+@Profile("!test")
 @Component
 public class LoadCvOnStartup implements ApplicationRunner {
 
