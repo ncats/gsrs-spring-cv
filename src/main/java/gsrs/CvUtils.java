@@ -33,12 +33,12 @@ public final class CvUtils {
     private CvUtils(){
         //can not instantiate
     }
-    public static List<ControlledVocabulary> adaptList(JsonNode cvList, ObjectMapper objectMapper) throws IOException {
+    public static List<ControlledVocabulary> adaptList(JsonNode cvList, ObjectMapper objectMapper, boolean stripIds) throws IOException {
         List<ControlledVocabulary> adaptedCvs = new ArrayList<>(cvList.size());
         for(JsonNode cvValue: cvList){
 
-            ControlledVocabulary cv = adaptSingleRecord(cvValue, objectMapper);
-            System.out.println("cv terms = " + cv.getTerms());
+            ControlledVocabulary cv = adaptSingleRecord(cvValue, objectMapper, stripIds);
+//            System.out.println("cv terms = " + cv.getTerms());
             //the Play version called cv.save() here we won't
             adaptedCvs.add(cv);
 
@@ -46,7 +46,7 @@ public final class CvUtils {
         }
         return adaptedCvs;
     }
-        public static ControlledVocabulary adaptSingleRecord(JsonNode cvValue, ObjectMapper objectMapper) throws IOException {
+        public static ControlledVocabulary adaptSingleRecord(JsonNode cvValue, ObjectMapper objectMapper, boolean stripIds) throws IOException {
         try {
             String domain = cvValue.at("/domain").asText();
             JsonNode vtype = cvValue.at("/vocabularyTermType");
@@ -62,13 +62,16 @@ public final class CvUtils {
             termType = cvValue.at("/vocabularyTermType").asText();
 
             ControlledVocabulary cv = (ControlledVocabulary) objectMapper.treeToValue(cvValue, objectMapper.getClass().getClassLoader().loadClass(termType));
-            //if there was an ID with this object, get rid of it
-            //it was added by mistake
-            cv.id = null;
-
+            if(stripIds) {
+                //if there was an ID with this object, get rid of it
+                //it was added by mistake
+                cv.id = null;
+            }
             if (cv.terms != null) { //Terms can be null sometimes now
                 for (VocabularyTerm vt : cv.terms) {
-                    vt.id = null;
+                    if(stripIds) {
+                        vt.id = null;
+                    }
                 }
             }
 

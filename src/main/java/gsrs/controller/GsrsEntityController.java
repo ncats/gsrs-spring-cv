@@ -4,6 +4,8 @@ package gsrs.controller;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
+import ix.utils.pojopatch.PojoDiff;
+import ix.utils.pojopatch.PojoPatch;
 import lombok.Data;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
@@ -26,9 +28,12 @@ public abstract class GsrsEntityController<T, I> {
     @Autowired
     private GsrsControllerConfiguration gsrsControllerConfiguration;
 
-    protected abstract T fromJson(JsonNode json) throws IOException;
+    protected abstract T fromNewJson(JsonNode json) throws IOException;
 
-    protected abstract List<T> fromJsonList(JsonNode list) throws IOException;
+    protected abstract List<T> fromNewJsonList(JsonNode list) throws IOException;
+    protected abstract T fromUpdatedJson(JsonNode json) throws IOException;
+
+    protected abstract List<T> fromUpdatedJsonList(JsonNode list) throws IOException;
 
     protected abstract JsonNode toJson(T t) throws IOException;
 
@@ -50,12 +55,35 @@ public abstract class GsrsEntityController<T, I> {
 
     protected abstract void delete(I id);
 
+    protected abstract I getIdFrom(T entity);
+
+    protected abstract T update(T t);
+
     @GsrsRestApiPostMapping()
     public ResponseEntity<Object> createEntity(@RequestBody JsonNode newEntityJson) throws IOException {
-        T newEntity = fromJson(newEntityJson);
+        T newEntity = fromNewJson(newEntityJson);
         //TODO add validation in later sprint
         return new ResponseEntity<>(create(newEntity), HttpStatus.CREATED);
 
+    }
+
+    @GsrsRestApiPutMapping()
+    public ResponseEntity<Object> updateEntity(@RequestBody JsonNode updatedEntityJson, @RequestParam Map<String, String> queryParameters) throws Exception {
+        T updatedEntity = fromUpdatedJson(updatedEntityJson);
+        //updatedEntity should have the same id
+        I id = getIdFrom(updatedEntity);
+        Optional<T> opt = get(id);
+        if(!opt.isPresent()){
+            return gsrsControllerConfiguration.handleBadRequest(queryParameters);
+        }
+        //TODO add validation in later sprint
+        T oldEntity = opt.get();
+        PojoPatch<T> patch = PojoDiff.getDiff(oldEntity, updatedEntity);
+        System.out.println("changes = " + patch.getChanges());
+        patch.apply(oldEntity);
+        System.out.println("updated entity = " + oldEntity);
+        //match 200 status of old GSRS
+        return new ResponseEntity<>(update(oldEntity), HttpStatus.OK);
     }
 
     @GsrsRestApiGetMapping("/@count")

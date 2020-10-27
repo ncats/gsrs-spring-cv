@@ -65,8 +65,8 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
     }
 
     @Override
-    protected ControlledVocabulary fromJson(JsonNode json) throws IOException {
-        return CvUtils.adaptSingleRecord(json, objectMapper);
+    protected ControlledVocabulary fromNewJson(JsonNode json) throws IOException {
+        return CvUtils.adaptSingleRecord(json, objectMapper, true);
 
     }
 
@@ -82,8 +82,28 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
     }
 
     @Override
-    protected List<ControlledVocabulary> fromJsonList(JsonNode list) throws IOException {
-        return CvUtils.adaptList(list, objectMapper);
+    protected ControlledVocabulary update(ControlledVocabulary controlledVocabulary) {
+        return repository.saveAndFlush(controlledVocabulary);
+    }
+
+    @Override
+    protected Long getIdFrom(ControlledVocabulary entity) {
+        return entity.getId();
+    }
+
+    @Override
+    protected List<ControlledVocabulary> fromNewJsonList(JsonNode list) throws IOException {
+        return CvUtils.adaptList(list, objectMapper, true);
+    }
+
+    @Override
+    protected ControlledVocabulary fromUpdatedJson(JsonNode json) throws IOException {
+        return CvUtils.adaptSingleRecord(json, objectMapper, false);
+    }
+
+    @Override
+    protected List<ControlledVocabulary> fromUpdatedJsonList(JsonNode list) throws IOException {
+        return CvUtils.adaptList(list, objectMapper, false);
     }
 
     private SearchResult<ControlledVocabulary> parseQueryIntoMatch(String query, SearchSession session) {

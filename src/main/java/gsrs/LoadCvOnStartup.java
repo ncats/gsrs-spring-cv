@@ -46,7 +46,7 @@ public class LoadCvOnStartup implements ApplicationRunner {
 
         System.out.println(json);
 
-        List<ControlledVocabulary> cv = CvUtils.adaptList(json, objectMapper);
+        List<ControlledVocabulary> cv = CvUtils.adaptList(json, objectMapper, true);
         repository.saveAll(cv);
         repository.flush();
 
