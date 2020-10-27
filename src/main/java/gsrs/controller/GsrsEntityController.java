@@ -4,6 +4,8 @@ package gsrs.controller;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
+import ix.core.util.EntityUtils;
+import ix.core.util.pojopointer.PojoPointer;
 import ix.utils.pojopatch.PojoDiff;
 import ix.utils.pojopatch.PojoPatch;
 import lombok.Data;
@@ -16,7 +18,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.HandlerMapping;
+import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +89,46 @@ public abstract class GsrsEntityController<T, I> {
         System.out.println("updated entity = " + oldEntity);
         //match 200 status of old GSRS
         return new ResponseEntity<>(update(oldEntity), HttpStatus.OK);
+    }
+
+    @GsrsRestApiGetMapping(value={"/{id:$ID}/**", "({id:$ID})/**" })
+    public ResponseEntity<Object> getFieldById(@PathVariable String id, @RequestParam Map<String, String> queryParameters, HttpServletRequest request){
+        Optional<T> opt = get(parseIdFromString(id));
+        return returnOnySpecifiedFieldPartFor(opt, queryParameters, request);
+    }
+
+    @GsrsRestApiGetMapping(value={"/{id:$NOT_ID}/**", "({id:$NOT_ID})/**" })
+    public ResponseEntity<Object> getFieldByFlex(@PathVariable String someKindOfId, @RequestParam Map<String, String> queryParameters, HttpServletRequest request){
+        Optional<T> opt = flexLookup(someKindOfId);
+        return returnOnySpecifiedFieldPartFor(opt, queryParameters, request);
+    }
+    private ResponseEntity<Object> returnOnySpecifiedFieldPartFor(Optional<T> opt, @RequestParam Map<String, String> queryParameters, HttpServletRequest request) {
+        if(!opt.isPresent()){
+            return gsrsControllerConfiguration.handleNotFound(queryParameters);
+        }
+        String field = getEndWildCardMatchingPartOfUrl(request);
+
+        PojoPointer pojoPointer = PojoPointer.fromURIPath(field);
+        Optional<EntityUtils.EntityWrapper<?>> at = EntityUtils.EntityWrapper.of(opt.get()).at(pojoPointer);
+        if(!at.isPresent()){
+            return gsrsControllerConfiguration.handleNotFound(queryParameters);
+        }
+        //match old Play version of GSRS which either return JSON for an object or raw string?
+        EntityUtils.EntityWrapper ew= at.get();
+        if(pojoPointer.isLeafRaw()){
+            return new ResponseEntity<>(ew.getRawValue(), HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(ew.toFullJsonNode(), HttpStatus.OK);
+        }
+    }
+
+    private static String getEndWildCardMatchingPartOfUrl(HttpServletRequest request) {
+        //Spring boot can't use regex in path to get wildcard expression so have to use request
+        ResourceUrlProvider urlProvider = (ResourceUrlProvider) request
+                .getAttribute(ResourceUrlProvider.class.getCanonicalName());
+        return urlProvider.getPathMatcher().extractPathWithinPattern(
+                String.valueOf(request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE)),
+                String.valueOf(request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE)));
     }
 
     @GsrsRestApiGetMapping("/@count")
