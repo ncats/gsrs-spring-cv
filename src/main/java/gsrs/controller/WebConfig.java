@@ -43,12 +43,12 @@ public class WebConfig {
                             return;
                         }
                             Class<?> beanType = ClassUtils.getUserClass(handlerType);
-
                         GsrsRestApiController gsrsRestApiAnnotation = AnnotationUtils.findAnnotation(beanType, GsrsRestApiController.class);
                         System.out.println("bean type" + beanType + "  annotation = " + gsrsRestApiAnnotation);
 
                         System.out.println(method);
-                        GsrsRestApiRequestMapping getMapping =AnnotationUtils.getAnnotation(method, GsrsRestApiRequestMapping.class);
+                        //we need to use the findMergedAnnotation to combine all the aliased fields
+                        GsrsRestApiRequestMapping getMapping =AnnotatedElementUtils.findMergedAnnotation(method, GsrsRestApiRequestMapping.class);
                         System.out.println(getMapping);
                         int[] versions=new int[]{1};
                         if(getMapping !=null){
@@ -112,6 +112,7 @@ public class WebConfig {
                                for(Set<String> basePatternPerVersion : apiBasesByVersions) {
 
                                    String[] paths = getMapping.value();
+
                                    if(paths.length==0){
                                        //no path it's probably a post to the root
                                        adjustedPatterns.addAll(basePatternPerVersion);
