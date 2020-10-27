@@ -44,7 +44,6 @@ public class AuditConfig {
 
             Optional<TemporalAccessor> dt = Optional.of(TimeUtil.getCurrentLocalDateTime());
 
-            System.out.println("in timetraveller!!! " + dt);
             return dt;
         };
     }

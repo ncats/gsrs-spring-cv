@@ -1,5 +1,6 @@
 package ix.ginas.models.v1;
 
+import com.example.demo.GsrsAnalyzers;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -11,6 +12,12 @@ import ix.ginas.models.serialization.KeywordDeserializer;
 import ix.ginas.models.serialization.KeywordListSerializer;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.search.engine.backend.types.Aggregable;
+import org.hibernate.search.engine.backend.types.Searchable;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -25,6 +32,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@Indexed
 public class ControlledVocabulary extends IxModel {
 
     private static final long serialVersionUID = 5455592961232451608L;
@@ -46,11 +54,17 @@ public class ControlledVocabulary extends IxModel {
 	
     @Column(unique = true)
     @Indexable(name = "Domain", facet = true)
+    @KeywordField(name = "Domain", searchable = Searchable.YES)
     public String domain;
 
 
     public void setTerms(List<VocabularyTerm> terms) {
+
         this.terms = terms;
+        if(terms !=null){
+           terms.forEach(t -> t.setOwner(this));
+        }
+        setIsDirty("terms");
     }
 
     private String vocabularyTermType = ControlledVocabulary.class.getName();
@@ -60,6 +74,7 @@ public class ControlledVocabulary extends IxModel {
     @JsonDeserialize(contentUsing = KeywordDeserializer.class)
     @Indexable(name = "Field")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+
     public List<Keyword> fields = new ArrayList<Keyword>();
 
     public boolean editable = true;
@@ -70,6 +85,7 @@ public class ControlledVocabulary extends IxModel {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     //@JoinTable(name="ix_ginas_cv_terms")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @Basic(fetch= FetchType.EAGER)
     public List<VocabularyTerm> terms = new ArrayList<>();
 
     public VocabularyTerm getTermWithValue(String val) {
@@ -90,6 +106,7 @@ public class ControlledVocabulary extends IxModel {
     public  void addTerms(VocabularyTerm term) {
 
         this.terms.add(term);
+        term.setOwner(this);
         setIsDirty("terms");
     }
 
