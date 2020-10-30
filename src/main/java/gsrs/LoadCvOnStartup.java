@@ -1,9 +1,6 @@
 package gsrs;
 
-import com.example.demo.Author;
-import com.example.demo.Book;
-import com.example.demo.BookSearchService;
-import com.fasterxml.jackson.core.type.TypeReference;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gsrs.repository.ControlledVocabularyRepository;

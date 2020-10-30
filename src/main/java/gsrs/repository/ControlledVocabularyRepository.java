@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
-public interface ControlledVocabularyRepository extends JpaRepository<ControlledVocabulary, Long> {
+public interface ControlledVocabularyRepository extends GsrsRepository<ControlledVocabulary, Long> {
 
     List<ControlledVocabulary> findByDomain(String domain);
     @Query(value = "select * from ControlledVocabulary  where id=:id", nativeQuery = true)

@@ -8,6 +8,7 @@ import gov.nih.ncats.common.util.CachedSupplier;
 import lombok.extern.slf4j.Slf4j;
 
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -637,11 +638,11 @@ public class Util {
 
 
 
-	//TODO katzelda October 2020 : not sure if we need this I think used for making cache key?
-    /*
-	public static String canonicalizeQuery (Http.Request req) {
-	    Map<String, String[]> queries = req.queryString();
-	    Set<String> keys = new TreeSet<String>(queries.keySet());
+
+
+	public static String canonicalizeQuery (HttpServletRequest req) {
+	    Map<String, String[]> queries = req.getParameterMap();
+	    Set<String> keys = new TreeSet<>(queries.keySet());
 	    StringBuilder q = new StringBuilder ();
 	    for (String key : keys) {
 	        if (q.length() > 0)
@@ -655,7 +656,7 @@ public class Util {
 	    return q.toString();
 	}
 
-     */
+
 	
 	public static class QueryStringManipulator{
 		Map<String,String[]> originalParams;

@@ -21,13 +21,13 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermRangeQuery;
-import org.hibernate.search.backend.lucene.LuceneExtension;
-import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
-import org.hibernate.search.engine.search.predicate.dsl.MatchPredicateFieldStep;
-import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
-import org.hibernate.search.engine.search.query.SearchResult;
-import org.hibernate.search.mapper.orm.search.query.dsl.HibernateOrmSearchQuerySelectStep;
-import org.hibernate.search.mapper.orm.session.SearchSession;
+//import org.hibernate.search.backend.lucene.LuceneExtension;
+//import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
+//import org.hibernate.search.engine.search.predicate.dsl.MatchPredicateFieldStep;
+//import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+//import org.hibernate.search.engine.search.query.SearchResult;
+//import org.hibernate.search.mapper.orm.search.query.dsl.HibernateOrmSearchQuerySelectStep;
+//import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -106,68 +106,69 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
         return CvUtils.adaptList(list, objectMapper, false);
     }
 
-    private SearchResult<ControlledVocabulary> parseQueryIntoMatch(String query, SearchSession session) {
-        Pattern pattern = Pattern.compile("(\\S+):(\\S+)");
-        Matcher matcher = pattern.matcher(query);
+//    private SearchResult<ControlledVocabulary> parseQueryIntoMatch(String query, SearchSession session) {
+//        Pattern pattern = Pattern.compile("(\\S+):(\\S+)");
+//        Matcher matcher = pattern.matcher(query);
+//
+//        Map<String, List<String>> map = new LinkedHashMap<>();
+//        while (matcher.find()) {
+//            map.computeIfAbsent(matcher.group(1), k -> new ArrayList<>()).add(matcher.group(2));
+//
+//        }
+//        if (map.isEmpty()) {
+//            return session.search(ControlledVocabulary.class).where(f -> f.matchAll()).fetchAll();
+//        }
+//        if (map.size() == 1) {
+//            Map.Entry<String, List<String>> entry = map.entrySet().iterator().next();
+//            if (entry.getValue().size() == 1) {
+//                //simpliest case
+//                return session.search(ControlledVocabulary.class)
+//                        .where(f -> f.match().field(entry.getKey())
+//                                .matching(entry.getValue().get(0))
+//
+//                        ).fetchAll();
+//            }
+//
+//            return session.search(ControlledVocabulary.class).where(f -> {
+//                        BooleanPredicateClausesStep<?> step = f.bool();
+//                        Iterator<String> values = entry.getValue().iterator();
+//                        while (values.hasNext()) {
+//                            step = step.should(f.match().field(entry.getKey())
+//                                    .matching(values.next()));
+//                        }
+//
+//                        return step;
+//                    }
+//            ).fetchAll();
+//
+//        }else{
+//            //more complicated version probably need to make an AST
+//            return null;
+//        }
+//
+//
+//
+//    }
 
-        Map<String, List<String>> map = new LinkedHashMap<>();
-        while (matcher.find()) {
-            map.computeIfAbsent(matcher.group(1), k -> new ArrayList<>()).add(matcher.group(2));
-
-        }
-        if (map.isEmpty()) {
-            return session.search(ControlledVocabulary.class).where(f -> f.matchAll()).fetchAll();
-        }
-        if (map.size() == 1) {
-            Map.Entry<String, List<String>> entry = map.entrySet().iterator().next();
-            if (entry.getValue().size() == 1) {
-                //simpliest case
-                return session.search(ControlledVocabulary.class)
-                        .where(f -> f.match().field(entry.getKey())
-                                .matching(entry.getValue().get(0))
-
-                        ).fetchAll();
-            }
-
-            return session.search(ControlledVocabulary.class).where(f -> {
-                        BooleanPredicateClausesStep<?> step = f.bool();
-                        Iterator<String> values = entry.getValue().iterator();
-                        while (values.hasNext()) {
-                            step = step.should(f.match().field(entry.getKey())
-                                    .matching(values.next()));
-                        }
-
-                        return step;
-                    }
-            ).fetchAll();
-
-        }else{
-            //more complicated version probably need to make an AST
-            return null;
-        }
-
-
-
-    }
-
-    @Override
-    protected List<ControlledVocabulary> indexSearchV2(LuceneSearchRequestOp op, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim) {
-        SearchSession session = searchService.createSearchSession();
-
-        return session.search(ControlledVocabulary.class)
-                .where(f-> op.doIt(f))
-                .fetchHits(skip.orElse(null),top.orElse(null));
-
-    }
+//    @Override
+//    protected List<ControlledVocabulary> indexSearchV2(LuceneSearchRequestOp op, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim) {
+//        SearchSession session = searchService.createSearchSession();
+//
+//        return session.search(ControlledVocabulary.class)
+//                .where(f-> op.doIt(f))
+//                .fetchHits(skip.orElse(null),top.orElse(null));
+//
+//    }
 
     @Override
     protected List<ControlledVocabulary> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim) {
-        SearchSession session = searchService.createSearchSession();
-        List<ControlledVocabulary> dslHits = parseQueryIntoMatch(query , session).hits();
-
-
-       System.out.println("dslHits = " + dslHits);
-        return dslHits;
+//        SearchSession session = searchService.createSearchSession();
+//        List<ControlledVocabulary> dslHits = parseQueryIntoMatch(query , session).hits();
+//
+//
+//       System.out.println("dslHits = " + dslHits);
+//        return dslHits;
+        return null;
 //        String[] fields = parseFieldsFrom(query);
 //        QueryParser parser;
 //        if(fields.length==1){

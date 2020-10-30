@@ -1,17 +1,18 @@
 package gsrs.indexer;
 
-
-import gov.nih.ncats.common.util.CachedSupplier;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
-import org.hibernate.search.mapper.orm.session.SearchSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
+//
+//import gov.nih.ncats.common.util.CachedSupplier;
+//import org.hibernate.search.mapper.orm.Search;
+//import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
+//import org.hibernate.search.mapper.orm.session.SearchSession;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.stereotype.Service;
+//
+//import javax.persistence.EntityManager;
 
 
 public abstract class EntitySearchService<T> {
+    /*
     @Autowired
     private EntityManager entityManager;
 
@@ -48,5 +49,7 @@ public abstract class EntitySearchService<T> {
         return Search.session( entityManager );
 
     }
+
+     */
 
 }

@@ -4,10 +4,12 @@ import ix.core.models.Keyword;
 import ix.core.util.EntityUtils;
 import ix.core.util.EntityUtils.EntityWrapper;
 import ix.core.util.pojopointer.PojoPointer;
-import org.apache.lucene.document.LongPoint;
-import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.LongField;
+//import org.apache.lucene.document.LongPoint;
+//import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.facet.FacetField;
+import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -16,10 +18,15 @@ import java.util.function.Consumer;
 import static org.apache.lucene.document.Field.Store.NO;
 import static org.apache.lucene.document.Field.Store.YES;
 
-public class ReflectingIndexValueMaker<T> implements IndexValueMaker<T>{
+public class ReflectingIndexValueMaker implements IndexValueMaker<Object>{
 	public static final String DIM_CLASS = "ix.Class";
 
-	public class IndexingFieldCreator implements BiConsumer<PathStack, EntityUtils.EntityWrapper>{
+    @Override
+    public Class<Object> getIndexedEntityClass() {
+        return Object.class;
+    }
+
+    public class IndexingFieldCreator implements BiConsumer<PathStack, EntityUtils.EntityWrapper>{
 		Consumer<IndexableValue> toAdd;
 		private EntityWrapper firstValue=null;
 		
@@ -34,14 +41,14 @@ public class ReflectingIndexValueMaker<T> implements IndexValueMaker<T>{
 				ew.getId().ifPresent(o -> {
 					String internalIdField = ew.getInternalIdField();
 					if (o instanceof Long) {
-//						toAdd.accept(new IndexableValueDirect(new LongField(ew.getInternalIdField(), (Long) o, YES)));
+						toAdd.accept(new IndexableValueDirect(new LongField(ew.getInternalIdField(), (Long) o, YES)));
 						//katzelda October 2020:
 						//Looks like newer versions of lucene removed LongField.
 						// There was a LegacyLongField but that's gone now too and now there is LongPoint
 						//but that doesn't store so you need to make 2 fields with the 2nd one to store with the same id
-						long value = (Long)o;
-						toAdd.accept(new IndexableValueDirect(new LongPoint(internalIdField, value)));
-						toAdd.accept(new IndexableValueDirect(new StoredField(internalIdField, value)));
+//						long value = (Long)o;
+//						toAdd.accept(new IndexableValueDirect(new LongPoint(internalIdField, value)));
+//						toAdd.accept(new IndexableValueDirect(new StoredField(internalIdField, value)));
 					} else {
 						toAdd.accept(new IndexableValueDirect(new StringField(internalIdField, o.toString(), YES)));  //Only Special case
 					}
@@ -128,8 +135,8 @@ public class ReflectingIndexValueMaker<T> implements IndexValueMaker<T>{
 	}
 
 	@Override
-	public void createIndexableValues(T t, Consumer<IndexableValue> consumer) {
-		EntityWrapper<T> ew=EntityWrapper.of(t);
+	public void createIndexableValues(Object t, Consumer<IndexableValue> consumer) {
+		EntityWrapper<Object> ew=EntityWrapper.of(t);
 		IndexingFieldCreator ifc= new IndexingFieldCreator(consumer);
 		ew.traverse().execute(ifc);
 	}
