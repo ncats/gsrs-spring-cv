@@ -1,4 +1,4 @@
-package com.example.demo;
+package gsrs;
 import static org.junit.jupiter.api.Assertions.*;
 public final class TestUtil {
 

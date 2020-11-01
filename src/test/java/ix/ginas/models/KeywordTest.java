@@ -1,6 +1,6 @@
 package ix.ginas.models;
 
-import com.example.demo.TestUtil;
+import gsrs.TestUtil;
 import ix.core.models.Keyword;
 import org.junit.jupiter.api.Test;
 
