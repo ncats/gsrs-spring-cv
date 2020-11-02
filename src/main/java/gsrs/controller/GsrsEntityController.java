@@ -307,13 +307,33 @@ public abstract class GsrsEntityController<T, I> {
 //            return step;
 //        }
 //    }
+@GsrsRestApiGetMapping(value = "/search/@facets", apiVersions = 1)
+public FacetMeta searchFacetFieldDrilldownV1(@RequestParam("q") Optional<String> query,
+                                             @RequestParam("field") Optional<String> field,
+                                    @RequestParam("top") Optional<Integer> top,
+                                    @RequestParam("skip") Optional<Integer> skip,
+                                    HttpServletRequest request) throws ParseException, IOException {
+    SearchOptions so = new SearchOptions.Builder()
+            .kind(getEntityClass())
+            .top(Integer.MAX_VALUE) // match Play GSRS
+            .fdim(10)
+            .fskip(0)
+            .ffilter("")
+            .withParameters(request.getParameterMap())
+            .build();
+
+    TextIndexer.TermVectors tv= searchFacetField(query, so, field);
+    return tv.getFacet(so.getFdim(), so.getFskip(), so.getFfilter(), GsrsSpringUtils.getFullUrlFrom(request));
+
+
+    //indexer.extractFullFacetQuery(this.query, this.options, field);
+}
     @GsrsRestApiGetMapping(value = "/@facets", apiVersions = 1)
     public FacetMeta searchFacetFieldV1(@RequestParam("field") Optional<String> field,
                                            @RequestParam("top") Optional<Integer> top,
                                            @RequestParam("skip") Optional<Integer> skip,
                                            HttpServletRequest request) throws ParseException, IOException {
 
-            TextIndexer.TermVectors tv = getTermVectors(field);
         SearchOptions so = new SearchOptions.Builder()
                 .fdim(10)
                 .fskip(0)
@@ -321,9 +341,12 @@ public abstract class GsrsEntityController<T, I> {
                 .withParameters(Util.reduceParams(request.getParameterMap(),
                         "fdim", "fskip", "ffilter"))
                 .build();
+
+        TextIndexer.TermVectors tv = getTermVectors(field);
         return tv.getFacet(so.getFdim(), so.getFskip(), so.getFfilter(), GsrsSpringUtils.getFullUrlFrom(request));
 
     }
+    protected abstract TextIndexer.TermVectors searchFacetField(Optional<String> query, SearchOptions options, Optional<String> field) throws IOException;
 
     protected abstract TextIndexer.TermVectors getTermVectors(Optional<String> field) throws IOException;
 

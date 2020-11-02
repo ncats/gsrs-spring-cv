@@ -246,6 +246,11 @@ SearchRequest req = builder
         return cvLegacySearchService.getTermVectors(field);
     }
 
+    @Override
+    protected TextIndexer.TermVectors searchFacetField(Optional<String> query, SearchOptions options, Optional<String> field) throws IOException {
+        return cvLegacySearchService.getTermVectorsFromQuery(query.orElse(null), options, field.orElse(null));
+    }
+
     /**
      * well known fields
      */

@@ -18,4 +18,6 @@ public interface GsrsSearchService<T> {
     SearchResult search(String query, SearchOptions options) throws IOException;
 
     TextIndexer.TermVectors getTermVectors(Optional<String> field) throws IOException;
+
+    TextIndexer.TermVectors getTermVectorsFromQuery(String query, SearchOptions options, String field) throws IOException;
 }
