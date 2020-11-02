@@ -4,6 +4,8 @@ import ix.core.util.EntityUtils.EntityWrapper;
 import lombok.extern.slf4j.Slf4j;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
@@ -19,6 +21,13 @@ import java.util.function.Consumer;
  * @param <T>
  */
 public interface IndexValueMaker<T> {
+	/**
+	 * Get the Class of type T we can index.
+	 * @return the Class of T.
+	 *
+	 * @since 3.0
+	 */
+	Class<T> getIndexedEntityClass();
 	/**
 	 * Creates IndexableValues out of the given Entity T, and returns them
 	 * to an awaiting Consumer. The IndexableValues may then be used to
@@ -41,20 +50,6 @@ public interface IndexValueMaker<T> {
 	 * @return
 	 */
 	default IndexValueMaker<T> and(IndexValueMaker<T> other){
-		return (t,c)->{
-		    try{
-		        this.createIndexableValues(t, c);
-		    }catch(Exception e){
-		    	e.printStackTrace();
-//		        Logger.error("Trouble creating index for:" + EntityWrapper.of(t).getKey(), e);
-		    }
-		    
-		    try{
-		        other.createIndexableValues(t, c);
-		    }catch(Exception e){
-		    	e.printStackTrace();
-//		        Logger.error("Trouble creating index for:" + EntityWrapper.of(t).getKey(), e);
-		    }
-		};
+		return new CombinedIndexValueMaker(this.getIndexedEntityClass(), Arrays.asList(this, other));
 	}
 }

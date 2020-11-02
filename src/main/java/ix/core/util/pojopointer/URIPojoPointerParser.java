@@ -1,20 +1,42 @@
 package ix.core.util.pojopointer;
 
 
-
 import gov.nih.ncats.common.Tuple;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+@Component
 public class URIPojoPointerParser {
 	public static enum ELEMENT_TYPE{
 		FIELD,
 		LAMBDA,
 		LOCATOR
 	}
-	
-	public static PojoPointer fromURI(String uripath) {
+	@Autowired
+	private LambdaParseRegistry lambdaParseRegistry;
+
+	private static URIPojoPointerParser instance;
+
+	public static URIPojoPointerParser getInstance(){
+		return instance;
+	}
+	/**
+	 * This is an annoying bridge so that
+	 * all the code from the G-SRS 2.x branch
+	 * which made static calls can still be used.
+	 */
+	@PostConstruct
+	public void initStaticField(){
+		instance = this;
+	}
+
+	public PojoPointer fromURI(String uripath) {
 
 		if (!uripath.startsWith("/") && 
 	         uripath.length() > 0 && 
@@ -74,6 +96,7 @@ public class URIPojoPointerParser {
 				switch (tup.k()) {
 				case FIELD:
 					break;
+
 				case LAMBDA:
 					String lambdaString = tup.v();
 
@@ -83,13 +106,20 @@ public class URIPojoPointerParser {
 
 					final String key = parse("_" + lambdaString, 0).get().v();
 
-					final PojoPointer pp = LambdaParseRegistry
-											.getPojoPointerParser(key)
+					Optional<Function<String, ? extends PojoPointer>> pojoPointerParser = lambdaParseRegistry
+							.getPojoPointerParser(key);
+					if(!pojoPointerParser.isPresent()){
+						throw new IllegalArgumentException("unknown function " + key);
+					}
+					final PojoPointer pp = pojoPointerParser.get()
+
 											.apply(lambdaString);
 					parent.tail(pp);
 					parent = pp;
 
 					break;
+
+
 				case LOCATOR:
 					int offset=1;
 					if(tup.v().length()>=2){
@@ -99,7 +129,7 @@ public class URIPojoPointerParser {
 					}
 					final boolean isNumber = tup.v().chars()
 					                    .skip(offset)
-					                    .allMatch(c->Character.isDigit(c))
+					                    .allMatch(c-> Character.isDigit(c))
 					                    ;
 					if (tup.v().startsWith("" + URIPojoPointerParser.ARRAY_CHAR) && isNumber) {
 						final ArrayPath ap = new ArrayPath(Integer.parseInt(tup.v().substring(1)));
@@ -159,7 +189,7 @@ public class URIPojoPointerParser {
 			return null;
 		};
 	}
-	public static Supplier<Tuple<ELEMENT_TYPE,String>> parse(final String element, final int start){
+	public static Supplier<Tuple<ELEMENT_TYPE, String>> parse(final String element, final int start){
 		final AtomicInteger charindex=new AtomicInteger(start);
 		return ()->{
 			URIPojoPointerParser.ELEMENT_TYPE tt=null;

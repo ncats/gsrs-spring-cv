@@ -1,6 +1,6 @@
 package ix.ginas.models.v1;
 
-import com.example.demo.GsrsAnalyzers;
+//import com.example.demo.GsrsAnalyzers;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -12,12 +12,12 @@ import ix.ginas.models.serialization.KeywordDeserializer;
 import ix.ginas.models.serialization.KeywordListSerializer;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.search.engine.backend.types.Aggregable;
-import org.hibernate.search.engine.backend.types.Searchable;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
+//import org.hibernate.search.engine.backend.types.Aggregable;
+//import org.hibernate.search.engine.backend.types.Searchable;
+//import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+//import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
+//import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+//import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@Indexed
+//@Indexed
 public class ControlledVocabulary extends IxModel {
 
     private static final long serialVersionUID = 5455592961232451608L;
@@ -54,7 +54,7 @@ public class ControlledVocabulary extends IxModel {
 	
     @Column(unique = true)
     @Indexable(name = "Domain", facet = true)
-    @KeywordField(name = "Domain", searchable = Searchable.YES)
+//    @KeywordField(name = "Domain", searchable = Searchable.YES)
     public String domain;
 
 

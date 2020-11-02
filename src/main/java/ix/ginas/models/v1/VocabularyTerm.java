@@ -79,4 +79,19 @@ public class VocabularyTerm extends IxModel {
 		this.filters= new EmbeddedKeywordList(this.filters);
 	}
 
+	@Override
+	public String toString() {
+		return "VocabularyTerm{" +
+				"owner=" + owner +
+				", value='" + value + '\'' +
+				", display='" + display + '\'' +
+				", description='" + description + '\'' +
+				", regex='" + regex + '\'' +
+				", origin='" + origin + '\'' +
+				", filters=" + filters +
+				", hidden=" + hidden +
+				", selected=" + selected +
+				"} " + super.toString();
+	}
+
 }

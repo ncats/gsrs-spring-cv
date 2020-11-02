@@ -96,7 +96,7 @@ public interface PojoPointer extends Serializable{
 	 * @return
 	 */
 	public static PojoPointer fromURIPath(String uripath){
-		return URIPojoPointerParser.fromURI(uripath);
+		return URIPojoPointerParser.getInstance().fromURI(uripath);
 	}
 
 	

@@ -1,5 +1,6 @@
 package gsrs;
 
+import akka.actor.ActorSystem;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
@@ -15,16 +16,31 @@ import ix.ginas.models.serialization.PrincipalSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 @Configuration
 //@EnableConfigurationProperties(RegisteredFunctionProperties.class)
 public class GsrsConfiguration {
+    @Autowired
+    private ApplicationContext applicationContext;
 
-
+    @Bean
+    public ActorSystem actorSystem() {
+        ActorSystem system = ActorSystem.create("akka-spring-demo");
+        SpringExtension.SPRING_EXTENSION_PROVIDER.get(system).initialize(applicationContext);
+        return system;
+    }
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
+        propertySourcesPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(true);
+        return propertySourcesPlaceholderConfigurer;
+    }
     @Bean
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public AutowireHelper autowireHelper(){

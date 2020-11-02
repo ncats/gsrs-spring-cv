@@ -5,6 +5,7 @@ import org.apache.lucene.index.IndexableField;
 public class IndexableValueDirect implements IndexableValue {
 	IndexableField ixf;
 	public IndexableValueDirect(IndexableField ixf){
+//		System.out.println(ixf.name());
 		this.ixf=ixf;
 	}
 	

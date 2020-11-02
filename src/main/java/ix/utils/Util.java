@@ -8,6 +8,7 @@ import gov.nih.ncats.common.util.CachedSupplier;
 import lombok.extern.slf4j.Slf4j;
 
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -109,9 +110,9 @@ public class Util {
     	}
     }
     // TODO katzelda October 2020 : removing Play request stuff
-//    public static String sha1 (Http.Request req) {
-//        return sha1 (req, (String[])null);
-//    }
+    public static String sha1 (HttpServletRequest req) {
+        return sha1 (req, (String[])null);
+    }
     
     private static String sha1 (String seed, Map<String, String[]> params) throws UnsupportedEncodingException, NoSuchAlgorithmException{
     	 MessageDigest md = MessageDigest.getInstance("SHA1");
@@ -161,11 +162,11 @@ public class Util {
 //     * @return
 //     */
 
-//    @Deprecated
-//    public static String sha1 (Http.Request req, String... params) {
-//        String path = req.method()+"/"+req.path();
-//        return sha1(path, req.queryString(), params);
-//    }
+    @Deprecated
+    public static String sha1 (HttpServletRequest req, String... params) {
+        String path = req.getMethod()+"/"+req.getPathTranslated();
+        return sha1(path, req.getParameterMap(), params);
+    }
     
     public static String sha1 (String path, Map<String,String[]> all, String... params) {
         try {
@@ -637,11 +638,11 @@ public class Util {
 
 
 
-	//TODO katzelda October 2020 : not sure if we need this I think used for making cache key?
-    /*
-	public static String canonicalizeQuery (Http.Request req) {
-	    Map<String, String[]> queries = req.queryString();
-	    Set<String> keys = new TreeSet<String>(queries.keySet());
+
+
+	public static String canonicalizeQuery (HttpServletRequest req) {
+	    Map<String, String[]> queries = req.getParameterMap();
+	    Set<String> keys = new TreeSet<>(queries.keySet());
 	    StringBuilder q = new StringBuilder ();
 	    for (String key : keys) {
 	        if (q.length() > 0)
@@ -655,7 +656,7 @@ public class Util {
 	    return q.toString();
 	}
 
-     */
+
 	
 	public static class QueryStringManipulator{
 		Map<String,String[]> originalParams;

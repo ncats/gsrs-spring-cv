@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 @Repository
-public interface PrincipalRepository extends JpaRepository<Principal, Long> {
+public interface PrincipalRepository extends GsrsRepository<Principal, Long> {
 
     Principal findDistinctByUsernameIgnoreCase(String username);
 

@@ -6,6 +6,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class CvSearchService extends EntitySearchService<ControlledVocabulary> {
     public CvSearchService() {
-        super(ControlledVocabulary.class);
+//        super(ControlledVocabulary.class);
     }
 }
