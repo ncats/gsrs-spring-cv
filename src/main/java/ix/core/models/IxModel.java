@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import gov.nih.ncats.common.util.TimeUtil;
+import ix.core.search.text.TextIndexerEntityListener;
 import ix.ginas.models.serialization.GsrsDateDeserializer;
 import ix.ginas.models.serialization.GsrsDateSerializer;
 import lombok.Getter;
@@ -19,7 +20,7 @@ import java.util.Date;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(value= {AuditingEntityListener.class, TextIndexerEntityListener.class})
 @Getter
 @Setter
 public class IxModel extends BaseModel {

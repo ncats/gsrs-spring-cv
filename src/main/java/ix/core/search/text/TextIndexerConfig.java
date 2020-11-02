@@ -23,6 +23,6 @@ public class TextIndexerConfig {
 
     @Value("#{new Integer('${ix.fetchWorkerCount: 4}')}")
     private int fetchWorkerCount = 4;
-    @Value("${ix.index.deepfields}")
+    @Value("${ix.index.deepfields: []}")
     private List<String> deepFields = new ArrayList<>();
 }

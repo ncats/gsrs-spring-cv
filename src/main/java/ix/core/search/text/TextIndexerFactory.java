@@ -3,6 +3,7 @@ package ix.core.search.text;
 import gsrs.indexer.IndexValueMakerFactory;
 import ix.core.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -23,6 +24,8 @@ public class TextIndexerFactory {
     private ConcurrentMap<File, TextIndexer> indexers = new ConcurrentHashMap<>();
 
     private Map<String, Boolean> deepKindMap = new ConcurrentHashMap<>();
+    @Value("${ix.home}")
+    private String defaultDir;
     @Autowired
     private TextIndexerConfig textIndexerConfig;
 
@@ -31,6 +34,8 @@ public class TextIndexerFactory {
 
     @Autowired
     public IndexValueMakerFactory indexValueMakerFactory;
+
+    private TextIndexer defaultIndexer;
 
     @PostConstruct
     private void init(){
@@ -51,6 +56,8 @@ public class TextIndexerFactory {
                 .flatMap(Collection::stream)
                 .map(ei->ei.getName())
                 .collect(Collectors.toSet());
+
+        defaultIndexer = getInstance(new File(defaultDir));
     }
 
     public TextIndexer getInstance(File baseDir){
@@ -69,4 +76,7 @@ public class TextIndexerFactory {
         return deepKindMap.computeIfAbsent(ew.getKind(), k->deepKinds.contains(k));
     }
 
+    public TextIndexer getDefaultInstance(){
+        return defaultIndexer;
+    }
 }

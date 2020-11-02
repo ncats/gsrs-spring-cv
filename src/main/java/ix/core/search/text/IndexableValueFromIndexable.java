@@ -20,6 +20,7 @@ public class IndexableValueFromIndexable implements IndexableValue {
 	}
 	
 	public static IndexableValueFromIndexable of(String name, Object value, String path, InstantiatedIndexable ii){
+//		System.out.println(name + " path = " + path + " value = " +value);
 		return new IndexableValueFromIndexable(name,path,value,ii);
 	}
 

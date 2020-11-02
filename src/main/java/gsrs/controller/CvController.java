@@ -6,7 +6,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import gov.nih.ncats.common.sneak.Sneak;
 import gsrs.CvUtils;
 import gsrs.indexer.CvSearchService;
+import gsrs.legacy.CvLegacySearchService;
 import gsrs.repository.ControlledVocabularyRepository;
+import ix.core.search.SearchOptions;
+import ix.core.search.SearchRequest;
+import ix.core.search.SearchResult;
 import ix.ginas.models.v1.CodeSystemControlledVocabulary;
 import ix.ginas.models.v1.ControlledVocabulary;
 import ix.ginas.models.v1.FragmentControlledVocabulary;
@@ -37,6 +41,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,8 +56,11 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
     @Autowired
     private ObjectMapper objectMapper;
 
+//    @Autowired
+//    private CvSearchService searchService;
+
     @Autowired
-    private CvSearchService searchService;
+    private CvLegacySearchService cvLegacySearchService;
 
     @Override
     protected Class<ControlledVocabulary> getEntityClass() {
@@ -161,8 +169,41 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
 //    }
 
     @Override
-    protected List<ControlledVocabulary> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim) {
-//        SearchSession session = searchService.createSearchSession();
+    protected List<ControlledVocabulary> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim,
+                                                       Map<String, String[]> requestParameters) {
+        SearchOptions.Builder builder = new SearchOptions.Builder()
+                                                .kind(ControlledVocabulary.class);
+        top.ifPresent( t-> builder.top(t));
+        skip.ifPresent( t-> builder.skip(t));
+        fdim.ifPresent( t-> builder.fdim(t));
+        builder.withParameters(requestParameters);
+
+//        SearchOptions searchRequest = builder.build();
+//        builder.query(query);
+/*
+SearchRequest req = builder
+                .top(top)
+                .skip(skip)
+                .fdim(fdim)
+                .kind(kind)
+                .withRequest(request()) // I don't like this,
+                                        // I like being explicit,
+                                        // but it's ok for now
+                .query(q)
+                .build();
+ */
+        try {
+            SearchResult result = cvLegacySearchService.search(query, builder.build() );
+            return result.getMatchesFuture().get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        //        SearchSession session = searchService.createSearchSession();
 //        List<ControlledVocabulary> dslHits = parseQueryIntoMatch(query , session).hits();
 //
 //

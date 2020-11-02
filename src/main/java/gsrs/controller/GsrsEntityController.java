@@ -306,18 +306,18 @@ public abstract class GsrsEntityController<T, I> {
                 Argument.of(0, int.class, "fdim"))),
      */
     @GsrsRestApiGetMapping(value = "/search", apiVersions = 1)
-    public ResponseEntity<Object> searchV1(@RequestParam("q") String query,
+    public ResponseEntity<Object> searchV1(@RequestParam("q") Optional<String> query,
                                            @RequestParam("top") Optional<Integer> top,
                                            @RequestParam("skip") Optional<Integer> skip,
                                            @RequestParam("fdim") Optional<Integer> fdim,
-                                           @RequestParam Map<String, String> queryParameters){
+                                           HttpServletRequest request){
 
-        List<T> hits = indexSearchV1(query, top, skip, fdim);
+        List<T> hits = indexSearchV1(query.orElse(null), top, skip, fdim, request.getParameterMap());
         //even if list is empty we want to return an empty list not a 404
         return new ResponseEntity<>(hits, HttpStatus.OK);
     }
 
-    protected abstract List<T> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim);
+    protected abstract List<T> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim, Map<String, String[]> parameterMap);
 //    protected abstract List<T> indexSearchV2(LuceneSearchRequestOp op, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim);
 
 //    @GsrsRestApiPostMapping(value = "/search", apiVersions = 2)

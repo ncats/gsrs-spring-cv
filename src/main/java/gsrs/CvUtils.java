@@ -72,6 +72,8 @@ public final class CvUtils {
                     if(stripIds) {
                         vt.id = null;
                     }
+                    //katzelda Oct 2020 owner might not be set
+                    vt.setOwner(cv);
                 }
             }
 
