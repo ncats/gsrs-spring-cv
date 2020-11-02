@@ -4,6 +4,9 @@ package gsrs.controller;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
+import ix.core.controllers.EntityFactory;
+import ix.core.models.ETag;
+import ix.core.search.SearchResult;
 import ix.core.search.text.ReflectingIndexValueMaker;
 import ix.core.search.text.TextIndexerFactory;
 import ix.core.util.EntityUtils;
@@ -312,12 +315,46 @@ public abstract class GsrsEntityController<T, I> {
                                            @RequestParam("fdim") Optional<Integer> fdim,
                                            HttpServletRequest request){
 
-        List<T> hits = indexSearchV1(query.orElse(null), top, skip, fdim, request.getParameterMap());
+        SearchResultPair result = indexSearchV1(query.orElse(null), top, skip, fdim, request.getParameterMap());
+
         //even if list is empty we want to return an empty list not a 404
-        return new ResponseEntity<>(hits, HttpStatus.OK);
+        return new ResponseEntity<>(saveAsEtag(result.resultList, result.searchResult, request), HttpStatus.OK);
     }
 
-    protected abstract List<T> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim, Map<String, String[]> parameterMap);
+    public static class SearchResultPair{
+        SearchResult searchResult;
+        List<Object> resultList;
+
+        public SearchResultPair( SearchResult searchResult, List<Object> resultList) {
+            this.resultList = resultList;
+            this.searchResult = searchResult;
+        }
+    }
+
+    private static ETag saveAsEtag(List<Object> results, SearchResult result, HttpServletRequest request) {
+        final ETag etag = new ETag.Builder()
+                .fromRequest(request)
+                .options(result.getOptions())
+                .count(results.size())
+                .total(result.getCount())
+
+                .sha1OfRequest(request, "q", "facet")
+                .build();
+
+//        if(request().queryString().get("export") ==null) {
+//            etag.save();
+//        }
+        etag.setContent(results);
+        etag.setSponosredResults(result.getSponsoredMatches());
+        etag.setFacets(result.getFacets());
+        etag.setFieldFacets(result.getFieldFacets());
+        etag.setSelected(result.getOptions().getFacets(), result.getOptions().isSideway());
+
+
+        return etag;
+    }
+
+    protected abstract SearchResultPair indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim, Map<String, String[]> parameterMap);
 //    protected abstract List<T> indexSearchV2(LuceneSearchRequestOp op, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim);
 
 //    @GsrsRestApiPostMapping(value = "/search", apiVersions = 2)

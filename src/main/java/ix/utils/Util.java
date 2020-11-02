@@ -110,9 +110,9 @@ public class Util {
     	}
     }
     // TODO katzelda October 2020 : removing Play request stuff
-//    public static String sha1 (Http.Request req) {
-//        return sha1 (req, (String[])null);
-//    }
+    public static String sha1 (HttpServletRequest req) {
+        return sha1 (req, (String[])null);
+    }
     
     private static String sha1 (String seed, Map<String, String[]> params) throws UnsupportedEncodingException, NoSuchAlgorithmException{
     	 MessageDigest md = MessageDigest.getInstance("SHA1");
@@ -162,11 +162,11 @@ public class Util {
 //     * @return
 //     */
 
-//    @Deprecated
-//    public static String sha1 (Http.Request req, String... params) {
-//        String path = req.method()+"/"+req.path();
-//        return sha1(path, req.queryString(), params);
-//    }
+    @Deprecated
+    public static String sha1 (HttpServletRequest req, String... params) {
+        String path = req.getMethod()+"/"+req.getPathTranslated();
+        return sha1(path, req.getParameterMap(), params);
+    }
     
     public static String sha1 (String path, Map<String,String[]> all, String... params) {
         try {

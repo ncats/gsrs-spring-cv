@@ -169,7 +169,7 @@ public class CvController extends GsrsEntityController<ControlledVocabulary, Lon
 //    }
 
     @Override
-    protected List<ControlledVocabulary> indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim,
+    protected SearchResultPair indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim,
                                                        Map<String, String[]> requestParameters) {
         SearchOptions.Builder builder = new SearchOptions.Builder()
                                                 .kind(ControlledVocabulary.class);
@@ -194,12 +194,16 @@ SearchRequest req = builder
  */
         try {
             SearchResult result = cvLegacySearchService.search(query, builder.build() );
-            return result.getMatchesFuture().get();
+            List<Object> results = new ArrayList<>();
+
+            result.copyTo(results, 0, top.orElse(10), true); //this looks wrong, because we're not skipping
+            //anything, but it's actually right,
+            //because the original request did the skipping.
+            //This mechanism should probably be worked out
+            //better, as it's not consistent.
+            return new SearchResultPair(result, results);
+
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
             e.printStackTrace();
         }
 
@@ -235,6 +239,7 @@ SearchRequest req = builder
 //        return hits;
 
     }
+
     /**
      * well known fields
      */

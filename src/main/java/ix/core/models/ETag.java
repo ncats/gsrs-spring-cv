@@ -186,7 +186,12 @@ public class ETag extends IxModel {
 		private String filter;
 
 		public Builder fromRequest(HttpServletRequest req) {
-			uri = req.getRequestURI();
+			String queryString = req.getQueryString();
+			if(queryString ==null || queryString.isEmpty()){
+				uri = req.getRequestURL().toString();
+			}else {
+				uri = req.getRequestURL().toString() + "?" + req.getQueryString();
+			}
 			path = req.getContextPath();
 			query = Util.canonicalizeQuery(req);
 			method = req.getMethod();
@@ -220,10 +225,10 @@ public class ETag extends IxModel {
 			return this;
 		}
 
-//		public Builder sha1OfRequest(String... params) {
-//			sha1 = Util.sha1(Controller.request(), params);
-//			return this;
-//		}
+		public Builder sha1OfRequest(HttpServletRequest req, String... params) {
+			sha1 = Util.sha1(req, params);
+			return this;
+		}
 
 		public Builder total(Integer total) {
 			this.total = total;
