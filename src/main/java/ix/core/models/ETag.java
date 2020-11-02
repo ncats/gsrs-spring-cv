@@ -3,6 +3,7 @@ package ix.core.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import gsrs.springUtils.GsrsSpringUtils;
 import ix.core.controllers.RequestOptions;
 import ix.core.search.FieldedQueryFacet;
 import ix.core.search.text.TextIndexer.Facet;
@@ -186,17 +187,14 @@ public class ETag extends IxModel {
 		private String filter;
 
 		public Builder fromRequest(HttpServletRequest req) {
-			String queryString = req.getQueryString();
-			if(queryString ==null || queryString.isEmpty()){
-				uri = req.getRequestURL().toString();
-			}else {
-				uri = req.getRequestURL().toString() + "?" + req.getQueryString();
-			}
+			uri= GsrsSpringUtils.getFullUrlFrom(req);
 			path = req.getContextPath();
 			query = Util.canonicalizeQuery(req);
 			method = req.getMethod();
 			return this;
 		}
+
+
 
 		public Builder options(RequestOptions op) {
 			this.top = op.getTop();

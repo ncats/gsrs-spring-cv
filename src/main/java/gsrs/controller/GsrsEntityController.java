@@ -4,19 +4,25 @@ package gsrs.controller;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
+import gsrs.springUtils.GsrsSpringUtils;
 import ix.core.controllers.EntityFactory;
 import ix.core.models.ETag;
+import ix.core.search.SearchOptions;
 import ix.core.search.SearchResult;
+import ix.core.search.text.FacetMeta;
 import ix.core.search.text.ReflectingIndexValueMaker;
+import ix.core.search.text.TextIndexer;
 import ix.core.search.text.TextIndexerFactory;
 import ix.core.util.EntityUtils;
 import ix.core.util.pojopointer.PojoPointer;
+import ix.utils.Util;
 import ix.utils.pojopatch.PojoDiff;
 import ix.utils.pojopatch.PojoPatch;
 import lombok.Data;
 //import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 //import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 //import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -301,13 +307,26 @@ public abstract class GsrsEntityController<T, I> {
 //            return step;
 //        }
 //    }
-    /*
-     SEARCH_OPERATION(new Operation("search",
-                Argument.of(null, String.class, "query"),
-                Argument.of(0, int.class, "top"),
-                Argument.of(0, int.class, "skip"),
-                Argument.of(0, int.class, "fdim"))),
-     */
+    @GsrsRestApiGetMapping(value = "/@facets", apiVersions = 1)
+    public FacetMeta searchFacetFieldV1(@RequestParam("field") Optional<String> field,
+                                           @RequestParam("top") Optional<Integer> top,
+                                           @RequestParam("skip") Optional<Integer> skip,
+                                           HttpServletRequest request) throws ParseException, IOException {
+
+            TextIndexer.TermVectors tv = getTermVectors(field);
+        SearchOptions so = new SearchOptions.Builder()
+                .fdim(10)
+                .fskip(0)
+                .ffilter("")
+                .withParameters(Util.reduceParams(request.getParameterMap(),
+                        "fdim", "fskip", "ffilter"))
+                .build();
+        return tv.getFacet(so.getFdim(), so.getFskip(), so.getFfilter(), GsrsSpringUtils.getFullUrlFrom(request));
+
+    }
+
+    protected abstract TextIndexer.TermVectors getTermVectors(Optional<String> field) throws IOException;
+
     @GsrsRestApiGetMapping(value = "/search", apiVersions = 1)
     public ResponseEntity<Object> searchV1(@RequestParam("q") Optional<String> query,
                                            @RequestParam("top") Optional<Integer> top,

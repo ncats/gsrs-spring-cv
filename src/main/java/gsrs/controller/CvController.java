@@ -11,6 +11,7 @@ import gsrs.repository.ControlledVocabularyRepository;
 import ix.core.search.SearchOptions;
 import ix.core.search.SearchRequest;
 import ix.core.search.SearchResult;
+import ix.core.search.text.TextIndexer;
 import ix.ginas.models.v1.CodeSystemControlledVocabulary;
 import ix.ginas.models.v1.ControlledVocabulary;
 import ix.ginas.models.v1.FragmentControlledVocabulary;
@@ -238,6 +239,11 @@ SearchRequest req = builder
 //        System.out.println("found # hits = " + hits.size());
 //        return hits;
 
+    }
+
+    @Override
+    protected TextIndexer.TermVectors getTermVectors(Optional<String> field) throws IOException {
+        return cvLegacySearchService.getTermVectors(field);
     }
 
     /**
