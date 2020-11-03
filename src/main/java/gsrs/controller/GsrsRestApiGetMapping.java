@@ -27,11 +27,25 @@ import java.lang.annotation.Target;
 )
 @GsrsRestApiRequestMapping
 public @interface GsrsRestApiGetMapping {
+    /**
+     * Alias for {@link GsrsRestApiRequestMapping#apiVersions()}.
+     */
+    @AliasFor(annotation = GsrsRestApiRequestMapping.class)
     int[] apiVersions() default {1, 2};
+    /**
+     * Alias for {@link GsrsRestApiRequestMapping#path}.
+     */
     @AliasFor(annotation = GsrsRestApiRequestMapping.class,  value= "value")
     String[] value() default {};
-
+    /**
+     * Alias for {@link GsrsRestApiRequestMapping#idPlaceholder()}.
+     */
+    @AliasFor(annotation = GsrsRestApiRequestMapping.class)
     String idPlaceholder() default "$ID";
+    /**
+     * Alias for {@link GsrsRestApiRequestMapping#notIdPlaceholder()}.
+     */
+    @AliasFor(annotation = GsrsRestApiRequestMapping.class)
     String notIdPlaceholder() default "$NOT_ID";
 
     /**
@@ -42,7 +56,7 @@ public @interface GsrsRestApiGetMapping {
 
 
     /**
-     * Alias for {@link RequestMapping#path}.
+     * Alias for {@link GsrsRestApiRequestMapping#path}.
      */
     @AliasFor(annotation = GsrsRestApiRequestMapping.class)
     String[] path() default {};

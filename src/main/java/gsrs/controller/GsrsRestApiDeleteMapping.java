@@ -25,24 +25,22 @@ import java.lang.annotation.Target;
 )
 @GsrsRestApiRequestMapping
 public @interface GsrsRestApiDeleteMapping {
+    /**
+     * Alias for {@link GsrsRestApiRequestMapping#apiVersions()}.
+     */
     int[] apiVersions() default {1, 2};
+    /**
+     * Alias for {@link GsrsRestApiRequestMapping#value()}.
+     */
     @AliasFor(annotation = GsrsRestApiRequestMapping.class,  value= "value")
     String[] value() default {};
 
     /**
-     * The placeholder String to represent an ID in the route;
-     * by default it is "$ID". Whenever the route path contains
-     * this placeholder, the placeholder will be replaced by the regular expression
-     * for that {@link IdHelper} implementation defined in the {@link GsrsEntityController}.
-     * @return A String can not be null or empty.
+     * Alias for {@link GsrsRestApiRequestMapping#idPlaceholder()}.
      */
     String idPlaceholder() default "$ID";
     /**
-     * The placeholder String to represent "not an ID" in the route;
-     * by default it is "$NOT_ID". Whenever the route path contains
-     * this placeholder, the placeholder will be replaced by the regular expression
-     * for that {@link IdHelper} implementation defined in the {@link GsrsEntityController}.
-     * @return A String can not be null or empty.
+     * Alias for {@link GsrsRestApiRequestMapping#notIdPlaceholder()}.
      */
     String notIdPlaceholder() default "$NOT_ID";
 
@@ -54,7 +52,7 @@ public @interface GsrsRestApiDeleteMapping {
 
 
     /**
-     * Alias for {@link RequestMapping#path}.
+     * Alias for {@link GsrsRestApiRequestMapping#path}.
      */
     @AliasFor(annotation = GsrsRestApiRequestMapping.class)
     String[] path() default {};
