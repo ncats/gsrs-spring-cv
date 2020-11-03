@@ -16,8 +16,8 @@ import java.lang.annotation.Target;
  * controller is a GSRS controller so all the GSRS
  * standard API route paths are generated.
  *
- * @see GsrsRestApiGetMapping
- * @see GsrsRestApiPostMapping
+ * @see GetGsrsRestApiMapping
+ * @see PostGsrsRestApiMapping
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

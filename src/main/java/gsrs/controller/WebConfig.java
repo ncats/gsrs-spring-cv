@@ -16,8 +16,8 @@ import java.util.*;
 
 /**
  * Configuration that generates the GSRS Standard Rest API routes
- * by parsing the GSRS custom annotations {@link GsrsEntityController}
- * and all the custom GSRS route mapping annotations such as {@link GsrsRestApiGetMapping} etc.
+ * by parsing the GSRS custom annotations {@link AbstractGsrsEntityController}
+ * and all the custom GSRS route mapping annotations such as {@link GetGsrsRestApiMapping} etc.
  */
 @Configuration
 public class WebConfig {

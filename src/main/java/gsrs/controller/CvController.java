@@ -2,30 +2,21 @@ package gsrs.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import gov.nih.ncats.common.sneak.Sneak;
 import gsrs.CvUtils;
-import gsrs.indexer.CvSearchService;
 import gsrs.legacy.CvLegacySearchService;
 import gsrs.repository.ControlledVocabularyRepository;
 import ix.core.search.SearchOptions;
-import ix.core.search.SearchRequest;
 import ix.core.search.SearchResult;
 import ix.core.search.text.TextIndexer;
-import ix.ginas.models.v1.CodeSystemControlledVocabulary;
 import ix.ginas.models.v1.ControlledVocabulary;
-import ix.ginas.models.v1.FragmentControlledVocabulary;
-import ix.ginas.models.v1.VocabularyTerm;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryparser.classic.CharStream;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermRangeQuery;
 //import org.hibernate.search.backend.lucene.LuceneExtension;
 //import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 //import org.hibernate.search.engine.search.predicate.dsl.MatchPredicateFieldStep;
@@ -35,14 +26,10 @@ import org.apache.lucene.search.TermRangeQuery;
 //import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.querydsl.QPageRequest;
-import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +37,7 @@ import java.util.regex.Pattern;
  * GSRS Rest API controller for the {@link ControlledVocabulary} entity.
  */
 @GsrsRestApiController(context ="vocabularies",  idHelper = IdHelpers.NUMBER)
-public class CvController extends GsrsEntityController<ControlledVocabulary, Long> {
+public class CvController extends AbstractGsrsEntityController<ControlledVocabulary, Long> {
 
     private static Pattern NUMBER_PATTERN = Pattern.compile("^"+ IdHelpers.NUMBER.getRegexAsString()+"$");
 

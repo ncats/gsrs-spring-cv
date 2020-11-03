@@ -1,9 +1,7 @@
 package gsrs.controller;
 
 import org.springframework.core.annotation.AliasFor;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -40,7 +38,7 @@ public @interface GsrsRestApiRequestMapping {
      * The placeholder String to represent an ID in the route;
      * by default it is "$ID". Whenever the route path contains
      * this placeholder, the placeholder will be replaced by the regular expression
-     * for that {@link IdHelper} implementation defined in the {@link GsrsEntityController}.
+     * for that {@link IdHelper} implementation defined in the {@link AbstractGsrsEntityController}.
      * @return A String can not be null or empty.
      */
     String idPlaceholder() default "$ID";
@@ -48,7 +46,7 @@ public @interface GsrsRestApiRequestMapping {
      * The placeholder String to represent "not an ID" in the route;
      * by default it is "$NOT_ID". Whenever the route path contains
      * this placeholder, the placeholder will be replaced by the regular expression
-     * for that {@link IdHelper} implementation defined in the {@link GsrsEntityController}.
+     * for that {@link IdHelper} implementation defined in the {@link AbstractGsrsEntityController}.
      * @return A String can not be null or empty.
      */
     String notIdPlaceholder() default "$NOT_ID";

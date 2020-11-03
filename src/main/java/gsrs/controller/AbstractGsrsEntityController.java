@@ -1,11 +1,8 @@
 package gsrs.controller;
 
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import gsrs.springUtils.GsrsSpringUtils;
-import ix.core.controllers.EntityFactory;
 import ix.core.models.ETag;
 import ix.core.search.SearchOptions;
 import ix.core.search.SearchResult;
@@ -50,7 +47,7 @@ import java.util.Optional;
  *
  * @see GsrsRestApiController
  */
-public abstract class GsrsEntityController<T, I> {
+public abstract class AbstractGsrsEntityController<T, I> {
 
     @Autowired
     private GsrsControllerConfiguration gsrsControllerConfiguration;
@@ -89,7 +86,7 @@ public abstract class GsrsEntityController<T, I> {
 
     protected abstract T update(T t);
 
-    @GsrsRestApiGetMapping("/{id:$ID}/index")
+    @GetGsrsRestApiMapping("/{id:$ID}/index")
     public void indexInfo(@PathVariable String id ){
         Optional<T> t = get(parseIdFromString(id));
         if(t.isPresent()){
@@ -98,7 +95,7 @@ public abstract class GsrsEntityController<T, I> {
             });
         }
     }
-    @GsrsRestApiPostMapping()
+    @PostGsrsRestApiMapping()
     public ResponseEntity<Object> createEntity(@RequestBody JsonNode newEntityJson) throws IOException {
         T newEntity = fromNewJson(newEntityJson);
         //TODO add validation in later sprint
@@ -106,7 +103,7 @@ public abstract class GsrsEntityController<T, I> {
 
     }
 
-    @GsrsRestApiPutMapping()
+    @PutGsrsRestApiMapping()
     public ResponseEntity<Object> updateEntity(@RequestBody JsonNode updatedEntityJson, @RequestParam Map<String, String> queryParameters) throws Exception {
         T updatedEntity = fromUpdatedJson(updatedEntityJson);
         //updatedEntity should have the same id
@@ -125,13 +122,13 @@ public abstract class GsrsEntityController<T, I> {
         return new ResponseEntity<>(update(oldEntity), HttpStatus.OK);
     }
 
-    @GsrsRestApiGetMapping(value={"/{id:$ID}/**", "({id:$ID})/**" })
+    @GetGsrsRestApiMapping(value={"/{id:$ID}/**", "({id:$ID})/**" })
     public ResponseEntity<Object> getFieldById(@PathVariable String id, @RequestParam Map<String, String> queryParameters, HttpServletRequest request){
         Optional<T> opt = get(parseIdFromString(id));
         return returnOnySpecifiedFieldPartFor(opt, queryParameters, request);
     }
 
-    @GsrsRestApiGetMapping(value={"/{id:$NOT_ID}/**", "({id:$NOT_ID})/**" })
+    @GetGsrsRestApiMapping(value={"/{id:$NOT_ID}/**", "({id:$NOT_ID})/**" })
     public ResponseEntity<Object> getFieldByFlex(@PathVariable String someKindOfId, @RequestParam Map<String, String> queryParameters, HttpServletRequest request){
         Optional<T> opt = flexLookup(someKindOfId);
         return returnOnySpecifiedFieldPartFor(opt, queryParameters, request);
@@ -165,12 +162,12 @@ public abstract class GsrsEntityController<T, I> {
                 String.valueOf(request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE)));
     }
 
-    @GsrsRestApiGetMapping("/@count")
+    @GetGsrsRestApiMapping("/@count")
     public long getCount(){
         return count();
     }
 
-    @GsrsRestApiGetMapping("")
+    @GetGsrsRestApiMapping("")
     public ResponseEntity<Object> page(@RequestParam(value = "top", defaultValue = "16") long top,
                      @RequestParam(value = "skip", defaultValue = "0") long skip,
                      @RequestParam(value = "order", required = false) String order,
@@ -210,7 +207,7 @@ public abstract class GsrsEntityController<T, I> {
         }
     }
 
-    @GsrsRestApiGetMapping(value = {"/{id:$ID}", "({id:$ID})"})
+    @GetGsrsRestApiMapping(value = {"/{id:$ID}", "({id:$ID})"})
     public ResponseEntity<Object> getById(@PathVariable String id, @RequestParam Map<String, String> queryParameters){
         Optional<T> obj = get(parseIdFromString(id));
         if(obj.isPresent()){
@@ -218,7 +215,7 @@ public abstract class GsrsEntityController<T, I> {
         }
         return gsrsControllerConfiguration.handleNotFound(queryParameters);
     }
-    @GsrsRestApiGetMapping(value = {"/{id:$NOT_ID}", "({id:$NOT_ID})"} )
+    @GetGsrsRestApiMapping(value = {"/{id:$NOT_ID}", "({id:$NOT_ID})"} )
     public ResponseEntity<Object> getByFlexId(@PathVariable String id, @RequestParam Map<String, String> queryParameters){
         Optional<T> obj = flexLookup(id);
         if(obj.isPresent()){
@@ -226,7 +223,7 @@ public abstract class GsrsEntityController<T, I> {
         }
         return gsrsControllerConfiguration.handleNotFound(queryParameters);
     }
-    @GsrsRestApiDeleteMapping(value = {"/{id:$ID}", "({id:$ID})"})
+    @DeleteGsrsRestApiMapping(value = {"/{id:$ID}", "({id:$ID})"})
     public ResponseEntity<Object> deleteById(@PathVariable String id, @RequestParam Map<String, String> queryParameters){
         I parsedId = parseIdFromString(id);
         return deleteEntity(parsedId);
@@ -237,7 +234,7 @@ public abstract class GsrsEntityController<T, I> {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GsrsRestApiDeleteMapping(value = {"/{id:$NOT_ID}", "({id:$NOT_ID})"} )
+    @DeleteGsrsRestApiMapping(value = {"/{id:$NOT_ID}", "({id:$NOT_ID})"} )
     public ResponseEntity<Object> deleteByFlexId(@PathVariable String id, @RequestParam Map<String, String> queryParameters){
         Optional<I> idOptional = flexLookupIdOnly(id);
         if(idOptional.isPresent()){
@@ -318,7 +315,7 @@ public abstract class GsrsEntityController<T, I> {
 //            return step;
 //        }
 //    }
-@GsrsRestApiGetMapping(value = "/search/@facets", apiVersions = 1)
+@GetGsrsRestApiMapping(value = "/search/@facets", apiVersions = 1)
 public FacetMeta searchFacetFieldDrilldownV1(@RequestParam("q") Optional<String> query,
                                              @RequestParam("field") Optional<String> field,
                                     @RequestParam("top") Optional<Integer> top,
@@ -339,7 +336,7 @@ public FacetMeta searchFacetFieldDrilldownV1(@RequestParam("q") Optional<String>
 
     //indexer.extractFullFacetQuery(this.query, this.options, field);
 }
-    @GsrsRestApiGetMapping(value = "/@facets", apiVersions = 1)
+    @GetGsrsRestApiMapping(value = "/@facets", apiVersions = 1)
     public FacetMeta searchFacetFieldV1(@RequestParam("field") Optional<String> field,
                                            @RequestParam("top") Optional<Integer> top,
                                            @RequestParam("skip") Optional<Integer> skip,
@@ -361,7 +358,7 @@ public FacetMeta searchFacetFieldDrilldownV1(@RequestParam("q") Optional<String>
 
     protected abstract TextIndexer.TermVectors getTermVectors(Optional<String> field) throws IOException;
 
-    @GsrsRestApiGetMapping(value = "/search", apiVersions = 1)
+    @GetGsrsRestApiMapping(value = "/search", apiVersions = 1)
     public ResponseEntity<Object> searchV1(@RequestParam("q") Optional<String> query,
                                            @RequestParam("top") Optional<Integer> top,
                                            @RequestParam("skip") Optional<Integer> skip,

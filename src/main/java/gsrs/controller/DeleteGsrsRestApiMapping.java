@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
         method = {RequestMethod.DELETE}
 )
 @GsrsRestApiRequestMapping
-public @interface GsrsRestApiDeleteMapping {
+public @interface DeleteGsrsRestApiMapping {
     /**
      * Alias for {@link GsrsRestApiRequestMapping#apiVersions()}.
      */
