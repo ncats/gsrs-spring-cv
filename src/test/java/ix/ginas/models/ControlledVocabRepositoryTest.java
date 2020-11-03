@@ -121,6 +121,7 @@ public class ControlledVocabRepositoryTest {
         assertEquals(createDate.getTime(), sut.created.getTime());
         assertEquals(createDate.getTime(), sut.modified.getTime());
 
+        assertEquals(1L, sut.getVersion());
         sut2.addTerms(new VocabularyTermBuilder("otherTerm")
                                                 .build());
 
@@ -135,7 +136,7 @@ public class ControlledVocabRepositoryTest {
         System.out.println(sut2.getModified());
         assertEquals(createDate.getTime(), sut3.getCreated().getTime());
         assertEquals(modifiedDate.getTime(), sut3.getModified().getTime());
-
+        assertEquals(2L, sut3.getVersion());
     }
 
     @Test
