@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+/**
+ * Configuration properties for the Legacy TextIndexer
+ */
 @Component
 @Data
 public class TextIndexerConfig {
@@ -23,6 +26,6 @@ public class TextIndexerConfig {
 
     @Value("#{new Integer('${ix.fetchWorkerCount: 4}')}")
     private int fetchWorkerCount = 4;
-    @Value("${ix.index.deepfields: []}")
+    @Value("${ix.index.deepfields:}")
     private List<String> deepFields = new ArrayList<>();
 }
