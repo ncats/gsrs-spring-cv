@@ -74,6 +74,7 @@ public class ControlledVocabRepositoryTest {
         ControlledVocabulary sut2 = repository.saveAndFlush(sut);
 
         assertNotNull(sut2.id);
+        assertEquals(1, sut.getVersion());
         assertEquals(date.getTime(), sut.created.getTime());
         assertEquals(date.getTime(), sut.modified.getTime());
 
@@ -118,6 +119,7 @@ public class ControlledVocabRepositoryTest {
         ControlledVocabulary sut2 = repository.saveAndFlush(sut);
 
         assertNotNull(sut.id);
+
         assertEquals(createDate.getTime(), sut.created.getTime());
         assertEquals(createDate.getTime(), sut.modified.getTime());
 
@@ -155,6 +157,7 @@ public class ControlledVocabRepositoryTest {
         assertEquals(createDate.getTime(), sut.created.getTime());
         assertEquals(createDate.getTime(), sut.modified.getTime());
 
+        assertEquals(1, sut.getVersion());
         sut2.addField(new Keyword("label2", "term2"));
 
 
@@ -172,6 +175,8 @@ public class ControlledVocabRepositoryTest {
                 new Keyword("label2", "term2")),
 
                 sut3.getFields());
+
+        assertEquals(2, sut.getVersion());
     }
 
 }
