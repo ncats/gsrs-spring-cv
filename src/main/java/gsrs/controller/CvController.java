@@ -46,6 +46,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * GSRS Rest API controller for the {@link ControlledVocabulary} entity.
+ */
 @GsrsRestApiController(context ="vocabularies",  idHelper = IdHelpers.NUMBER)
 public class CvController extends GsrsEntityController<ControlledVocabulary, Long> {
 

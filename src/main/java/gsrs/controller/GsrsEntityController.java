@@ -38,7 +38,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
+/**
+ *  Abstract GSRS Controller that generates all the
+ *  standard GSRS routes in the form `api/v1/$context`;
+ *  all entities that you wish to have routes that
+ *  conform to the GSRS standard route paths
+ *  should extend this class.
+ *
+ * @param <T> The entity type.
+ * @param <I> the type for the entity's ID.
+ *
+ * @see GsrsRestApiController
+ */
 public abstract class GsrsEntityController<T, I> {
 
     @Autowired

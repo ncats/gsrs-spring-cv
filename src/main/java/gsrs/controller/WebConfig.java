@@ -14,6 +14,11 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import java.lang.reflect.Method;
 import java.util.*;
 
+/**
+ * Configuration that generates the GSRS Standard Rest API routes
+ * by parsing the GSRS custom annotations {@link GsrsEntityController}
+ * and all the custom GSRS route mapping annotations such as {@link GsrsRestApiGetMapping} etc.
+ */
 @Configuration
 public class WebConfig {
 

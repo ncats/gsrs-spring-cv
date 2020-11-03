@@ -29,7 +29,21 @@ public @interface GsrsRestApiDeleteMapping {
     @AliasFor(annotation = GsrsRestApiRequestMapping.class,  value= "value")
     String[] value() default {};
 
+    /**
+     * The placeholder String to represent an ID in the route;
+     * by default it is "$ID". Whenever the route path contains
+     * this placeholder, the placeholder will be replaced by the regular expression
+     * for that {@link IdHelper} implementation defined in the {@link GsrsEntityController}.
+     * @return A String can not be null or empty.
+     */
     String idPlaceholder() default "$ID";
+    /**
+     * The placeholder String to represent "not an ID" in the route;
+     * by default it is "$NOT_ID". Whenever the route path contains
+     * this placeholder, the placeholder will be replaced by the regular expression
+     * for that {@link IdHelper} implementation defined in the {@link GsrsEntityController}.
+     * @return A String can not be null or empty.
+     */
     String notIdPlaceholder() default "$NOT_ID";
 
     /**

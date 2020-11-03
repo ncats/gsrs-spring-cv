@@ -15,6 +15,26 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Configuration for GSRS controllers mostly used right now
+ * to support backwards compatibility for the unusual way the legacy GSRS application
+ * supported error handling and error codes.
+ * <p>
+ * Some Legacy GSRS API consumers could not handle all HTTP status codes
+ * and so we added support for additional url parameters and configurations
+ * to override the standard HTTP error codes that could be set by the API consumer.
+ * </p>
+ * For example, setting a url parameter to force the status code to be 500 even if
+ * the standard REST API should return a 404.
+ * <p>
+ * Configuraing the url parameter name is set in the application properties
+ * file as {@code gsrs.api.errorCodeParameter}.
+ * Another configuration parameter to always force the api to override the usual
+ * error code is {@code gsrs.api.forceErrorCodeValue} so clients don't
+ * have to specify the url parameter in every request they make (or their software
+ * could not be modified to add the url parameter).
+ * </p>
+ */
 @Configuration
 @ConfigurationProperties(prefix="gsrs.api")
 @Data
@@ -27,11 +47,12 @@ public class GsrsControllerConfiguration {
     private static boolean isValidErrorCode(int askedForStatus) {
         return askedForStatus >=400 && askedForStatus< 600;
     }
-    public int overrideErrorCodeIfNeeded(int defaultStatus, WebRequest request){
+
+    private int overrideErrorCodeIfNeeded(int defaultStatus, WebRequest request){
         String value =request.getParameter(errorCodeParameter);
         return overrideErrorCodeIfNeeded(defaultStatus, Collections.singletonMap(errorCodeParameter, value));
     }
-    public int overrideErrorCodeIfNeeded(int defaultStatus, Map<String, String> queryParameters){
+    private int overrideErrorCodeIfNeeded(int defaultStatus, Map<String, String> queryParameters){
         //GSRS-1598 force not found error to sometimes be a 500 instead of 404
         //if requests tells us
         try {

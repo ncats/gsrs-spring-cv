@@ -6,6 +6,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.io.Serializable;
+
+/**
+ * A {@link Pageable} implementation that takes an offset and limit
+ * to calculate what page of results to return.
+ */
 @EqualsAndHashCode
 public class OffsetBasedPageRequest implements Pageable, Serializable{
 

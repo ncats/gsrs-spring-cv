@@ -1,9 +1,17 @@
 package gsrs.controller;
 
+/**
+ * Common implementations of {@link IdHelpers}.
+ */
 public enum IdHelpers implements IdHelper {
-
+    /**
+     * An ID that is a number.
+     */
     NUMBER("[0-9]+", "[^0-9]+"),
     STRING_NO_WHITESPACE("\\S+"),
+    /**
+     * An ID that is a UUID.
+     */
     UUID( "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"),
     CUSTOM(".*")
     ;
