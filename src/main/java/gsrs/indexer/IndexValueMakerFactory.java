@@ -18,7 +18,7 @@ public class IndexValueMakerFactory {
     private List<IndexValueMaker> indexValueMakers;
     private ReflectingIndexValueMaker reflectingIndexValueMaker = new ReflectingIndexValueMaker();
 
-    public IndexValueMaker<Object> createIndexValueMakerFor(Object obj){
+    public IndexValueMaker createIndexValueMakerFor(Object obj){
         return createIndexValueMakerFor( EntityUtils.EntityWrapper.of(obj));
     }
     public  IndexValueMaker createIndexValueMakerFor(EntityUtils.EntityWrapper<?> ew){

@@ -17,12 +17,13 @@ import java.util.function.Consumer;
  * 
  * 
  * @author peryeata
+ * @author katzelda
  *
  * @param <T>
  */
 public interface IndexValueMaker<T> {
 	/**
-	 * Get the Class of type T we can index.
+	 * Get the Class of type T (and subclasses) we can index.
 	 * @return the Class of T.
 	 *
 	 * @since 3.0
