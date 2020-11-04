@@ -100,6 +100,11 @@ public class GsrsControllerConfiguration {
         return new ResponseEntity<>( createStatusJson("bad request", status), HttpStatus.valueOf(status));
 
     }
+    public ResponseEntity<Object> handleError(Throwable t, Map<String, String> queryParameters) {
+        int status = overrideErrorCodeIfNeeded(500, queryParameters);
+        return new ResponseEntity<>( getError(t, status), HttpStatus.valueOf(status));
+
+    }
 
     @Data
     @Builder

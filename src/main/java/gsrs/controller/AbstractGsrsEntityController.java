@@ -2,9 +2,11 @@ package gsrs.controller;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
+import gsrs.legacy.LegacyGsrsSearchService;
 import gsrs.springUtils.GsrsSpringUtils;
 import ix.core.models.ETag;
 import ix.core.search.SearchOptions;
+import ix.core.search.SearchRequest;
 import ix.core.search.SearchResult;
 import ix.core.search.text.FacetMeta;
 import ix.core.search.text.ReflectingIndexValueMaker;
@@ -12,6 +14,7 @@ import ix.core.search.text.TextIndexer;
 import ix.core.search.text.TextIndexerFactory;
 import ix.core.util.EntityUtils;
 import ix.core.util.pojopointer.PojoPointer;
+import ix.ginas.models.v1.ControlledVocabulary;
 import ix.utils.Util;
 import ix.utils.pojopatch.PojoDiff;
 import ix.utils.pojopatch.PojoPatch;
@@ -31,6 +34,7 @@ import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,8 +56,6 @@ public abstract class AbstractGsrsEntityController<T, I> {
     @Autowired
     private GsrsControllerConfiguration gsrsControllerConfiguration;
 
-    @Autowired
-    private TextIndexerFactory textIndexerFactory;
 
     protected abstract T fromNewJson(JsonNode json) throws IOException;
 
@@ -86,6 +88,9 @@ public abstract class AbstractGsrsEntityController<T, I> {
 
     protected abstract T update(T t);
 
+    protected GsrsControllerConfiguration getGsrsControllerConfiguration(){
+        return gsrsControllerConfiguration;
+    }
     @GetGsrsRestApiMapping("/{id:$ID}/index")
     public void indexInfo(@PathVariable String id ){
         Optional<T> t = get(parseIdFromString(id));
@@ -315,96 +320,11 @@ public abstract class AbstractGsrsEntityController<T, I> {
 //            return step;
 //        }
 //    }
-@GetGsrsRestApiMapping(value = "/search/@facets", apiVersions = 1)
-public FacetMeta searchFacetFieldDrilldownV1(@RequestParam("q") Optional<String> query,
-                                             @RequestParam("field") Optional<String> field,
-                                    @RequestParam("top") Optional<Integer> top,
-                                    @RequestParam("skip") Optional<Integer> skip,
-                                    HttpServletRequest request) throws ParseException, IOException {
-    SearchOptions so = new SearchOptions.Builder()
-            .kind(getEntityClass())
-            .top(Integer.MAX_VALUE) // match Play GSRS
-            .fdim(10)
-            .fskip(0)
-            .ffilter("")
-            .withParameters(request.getParameterMap())
-            .build();
-
-    TextIndexer.TermVectors tv= searchFacetField(query, so, field);
-    return tv.getFacet(so.getFdim(), so.getFskip(), so.getFfilter(), GsrsSpringUtils.getFullUrlFrom(request));
 
 
-    //indexer.extractFullFacetQuery(this.query, this.options, field);
-}
-    @GetGsrsRestApiMapping(value = "/@facets", apiVersions = 1)
-    public FacetMeta searchFacetFieldV1(@RequestParam("field") Optional<String> field,
-                                           @RequestParam("top") Optional<Integer> top,
-                                           @RequestParam("skip") Optional<Integer> skip,
-                                           HttpServletRequest request) throws ParseException, IOException {
-
-        SearchOptions so = new SearchOptions.Builder()
-                .fdim(10)
-                .fskip(0)
-                .ffilter("")
-                .withParameters(Util.reduceParams(request.getParameterMap(),
-                        "fdim", "fskip", "ffilter"))
-                .build();
-
-        TextIndexer.TermVectors tv = getTermVectors(field);
-        return tv.getFacet(so.getFdim(), so.getFskip(), so.getFfilter(), GsrsSpringUtils.getFullUrlFrom(request));
-
-    }
-    protected abstract TextIndexer.TermVectors searchFacetField(Optional<String> query, SearchOptions options, Optional<String> field) throws IOException;
-
-    protected abstract TextIndexer.TermVectors getTermVectors(Optional<String> field) throws IOException;
-
-    @GetGsrsRestApiMapping(value = "/search", apiVersions = 1)
-    public ResponseEntity<Object> searchV1(@RequestParam("q") Optional<String> query,
-                                           @RequestParam("top") Optional<Integer> top,
-                                           @RequestParam("skip") Optional<Integer> skip,
-                                           @RequestParam("fdim") Optional<Integer> fdim,
-                                           HttpServletRequest request){
-
-        SearchResultPair result = indexSearchV1(query.orElse(null), top, skip, fdim, request.getParameterMap());
-
-        //even if list is empty we want to return an empty list not a 404
-        return new ResponseEntity<>(saveAsEtag(result.resultList, result.searchResult, request), HttpStatus.OK);
-    }
-
-    public static class SearchResultPair{
-        SearchResult searchResult;
-        List<Object> resultList;
-
-        public SearchResultPair( SearchResult searchResult, List<Object> resultList) {
-            this.resultList = resultList;
-            this.searchResult = searchResult;
-        }
-    }
-
-    private static ETag saveAsEtag(List<Object> results, SearchResult result, HttpServletRequest request) {
-        final ETag etag = new ETag.Builder()
-                .fromRequest(request)
-                .options(result.getOptions())
-                .count(results.size())
-                .total(result.getCount())
-
-                .sha1OfRequest(request, "q", "facet")
-                .build();
-
-//        if(request().queryString().get("export") ==null) {
-//            etag.save();
-//        }
-        etag.setContent(results);
-        etag.setSponosredResults(result.getSponsoredMatches());
-        etag.setFacets(result.getFacets());
-        etag.setFieldFacets(result.getFieldFacets());
-        etag.setSelected(result.getOptions().getFacets(), result.getOptions().isSideway());
 
 
-        return etag;
-    }
 
-    protected abstract SearchResultPair indexSearchV1(String query, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim, Map<String, String[]> parameterMap);
 //    protected abstract List<T> indexSearchV2(LuceneSearchRequestOp op, Optional<Integer> top, Optional<Integer> skip, Optional<Integer> fdim);
 
 //    @GsrsRestApiPostMapping(value = "/search", apiVersions = 2)
