@@ -45,8 +45,27 @@ public class EntityProcessorFactory {
                 }
             }
             Set<EntityProcessor> processors = list.keySet();
-
+            if(processors.isEmpty()){
+                return new NoOpEntityProcessor(k);
+            }
             return new CombinedEntityProcessor(k, processors);
         });
+    }
+
+    /**
+     * an EntityProcessor that does nothing.  This is used when we don't have any registered entity processors to combine.
+     * @param <T>
+     */
+    private static class NoOpEntityProcessor<T> implements EntityProcessor<T>{
+        private final Class<T> c;
+
+        public NoOpEntityProcessor(Class<T> c) {
+            this.c = c;
+        }
+
+        @Override
+        public Class<T> getEntityClass() {
+            return c;
+        }
     }
 }

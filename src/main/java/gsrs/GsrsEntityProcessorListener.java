@@ -64,4 +64,12 @@ public class GsrsEntityProcessorListener {
             log.error("error calling entityProcessor", e);
         }
     }
+    @PostLoad
+    public void postLoad(Object o){
+        try {
+            epf.getCombinedEntityProcessorFor(o).postLoad(o);
+        } catch (EntityProcessor.FailProcessingException e) {
+            log.error("error calling entityProcessor", e);
+        }
+    }
 }

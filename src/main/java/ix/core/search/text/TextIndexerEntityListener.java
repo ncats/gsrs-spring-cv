@@ -9,6 +9,9 @@ import javax.persistence.PostRemove;
 import javax.persistence.PostUpdate;
 import java.io.IOException;
 
+/**
+ * Hibernate Entity listener that will update our legacy {@link TextIndexer}.
+ */
 public class TextIndexerEntityListener {
 
     @Autowired
