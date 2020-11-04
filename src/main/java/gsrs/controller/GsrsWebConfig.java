@@ -20,7 +20,7 @@ import java.util.*;
  * and all the custom GSRS route mapping annotations such as {@link GetGsrsRestApiMapping} etc.
  */
 @Configuration
-public class WebConfig {
+public class GsrsWebConfig {
 
     @Bean
     public WebMvcRegistrations webMvcRegistrationsHandlerMapping() {
