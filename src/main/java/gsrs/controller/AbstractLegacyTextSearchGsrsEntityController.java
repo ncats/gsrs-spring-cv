@@ -13,6 +13,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.function.EntityResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -30,6 +31,11 @@ import java.util.Optional;
  */
 public abstract class AbstractLegacyTextSearchGsrsEntityController<T, I> extends AbstractGsrsEntityController<T,I> {
 
+    @PostGsrsRestApiMapping(value="/@reindex", apiVersions = 1)
+    public ResponseEntity forceFullReindex(){
+        getlegacyGsrsSearchService().reindexAndWait();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
     @GetGsrsRestApiMapping(value = "/search/@facets", apiVersions = 1)
     public FacetMeta searchFacetFieldDrilldownV1(@RequestParam("q") Optional<String> query,
                                                  @RequestParam("field") Optional<String> field,
