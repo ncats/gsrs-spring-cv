@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import gov.nih.ncats.common.util.TimeUtil;
+import gsrs.GsrsEntityProcessorListener;
 import ix.core.search.text.TextIndexerEntityListener;
 import ix.ginas.models.serialization.GsrsDateDeserializer;
 import ix.ginas.models.serialization.GsrsDateSerializer;
@@ -20,7 +21,7 @@ import java.util.Date;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @MappedSuperclass
-@EntityListeners(value= {AuditingEntityListener.class, TextIndexerEntityListener.class})
+@EntityListeners(value= {AuditingEntityListener.class, GsrsEntityProcessorListener.class, TextIndexerEntityListener.class})
 @Getter
 @Setter
 public class IxModel extends BaseModel {

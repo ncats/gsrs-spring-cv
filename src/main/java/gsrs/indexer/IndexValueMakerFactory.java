@@ -14,7 +14,7 @@ import java.util.List;
 public class IndexValueMakerFactory {
 
 
-    @Autowired
+    @Autowired(required = false)
     private List<IndexValueMaker> indexValueMakers;
     private ReflectingIndexValueMaker reflectingIndexValueMaker = new ReflectingIndexValueMaker();
 
@@ -22,17 +22,22 @@ public class IndexValueMakerFactory {
         return createIndexValueMakerFor( EntityUtils.EntityWrapper.of(obj));
     }
     public  IndexValueMaker createIndexValueMakerFor(EntityUtils.EntityWrapper<?> ew){
-
+        //indexValueMakers field is null if no components found
+        if(indexValueMakers ==null) {
+            return reflectingIndexValueMaker;
+        }
         Class<?> clazz = ew.getEntityClass();
         List<IndexValueMaker> acceptedList = new ArrayList<>();
         //always add reflecting indexvaluemaker
         acceptedList.add(reflectingIndexValueMaker);
-        for(IndexValueMaker indexValueMaker : indexValueMakers){
-            Class<?> c = indexValueMaker.getIndexedEntityClass();
-            if(c.isAssignableFrom(clazz)){
-                acceptedList.add(indexValueMaker);
+
+            for (IndexValueMaker indexValueMaker : indexValueMakers) {
+                Class<?> c = indexValueMaker.getIndexedEntityClass();
+                if (c.isAssignableFrom(clazz)) {
+                    acceptedList.add(indexValueMaker);
+                }
             }
-        }
+
         return new CombinedIndexValueMaker(clazz, acceptedList);
 
     }
