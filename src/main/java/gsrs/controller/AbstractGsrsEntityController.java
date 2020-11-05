@@ -3,6 +3,7 @@ package gsrs.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gov.nih.ncats.common.util.CachedSupplier;
 import gsrs.legacy.LegacyGsrsSearchService;
 import gsrs.springUtils.GsrsSpringUtils;
 import gsrs.validator.ValidatorFactoryService;
@@ -74,14 +75,14 @@ public abstract class AbstractGsrsEntityController<T, I> {
 
     private final String context;
 
-    private ValidatorFactory validatorFactory;
+    private CachedSupplier<ValidatorFactory> validatorFactory;
     public AbstractGsrsEntityController(String context) {
         this.context = context;
     }
 
     @PostConstruct
     private void initValidator(){
-        validatorFactory = validatorFactoryService.newFactory(context, mapper);
+        validatorFactory = CachedSupplier.runOnce(()->validatorFactoryService.newFactory(context, mapper));
     }
 
     protected abstract T fromNewJson(JsonNode json) throws IOException;
@@ -131,7 +132,7 @@ public abstract class AbstractGsrsEntityController<T, I> {
     public ResponseEntity<Object> createEntity(@RequestBody JsonNode newEntityJson) throws IOException {
         T newEntity = fromNewJson(newEntityJson);
 
-        Validator<T> validator  = validatorFactory.createValidatorFor(newEntity, null, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.CREATE);
+        Validator<T> validator  = validatorFactory.getSync().createValidatorFor(newEntity, null, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.CREATE);
         ValidationResponse<T> resp = validator.validate(newEntity, null);
         if(resp!=null && !resp.isValid()){
             return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
@@ -181,10 +182,10 @@ public abstract class AbstractGsrsEntityController<T, I> {
         Optional<T> opt = get(id);
         Validator<T> validator;
         if(opt.isPresent()){
-            validator  = validatorFactory.createValidatorFor(updatedEntity, opt.get(), ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.UPDATE);
+            validator  = validatorFactory.getSync().createValidatorFor(updatedEntity, opt.get(), ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.UPDATE);
 
         }else{
-            validator  = validatorFactory.createValidatorFor(updatedEntity, null, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.CREATE);
+            validator  = validatorFactory.getSync().createValidatorFor(updatedEntity, null, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.CREATE);
 
         }
         ValidationResponse<T> resp = validator.validate(updatedEntity, opt.orElse(null));
@@ -205,7 +206,7 @@ public abstract class AbstractGsrsEntityController<T, I> {
 
         T oldEntity = opt.get();
 
-        Validator<T> validator  = validatorFactory.createValidatorFor(updatedEntity, oldEntity, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.CREATE);
+        Validator<T> validator  = validatorFactory.getSync().createValidatorFor(updatedEntity, oldEntity, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.CREATE);
         ValidationResponse<T> resp = validator.validate(updatedEntity, oldEntity);
         if(resp!=null && !resp.isValid()){
             return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);

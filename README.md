@@ -63,3 +63,47 @@ public class MyEntityProcessor implements EntityProcessor<Foo>{
      ...
 } 
 ```
+
+### Custom Validators
+Entities can have multiple custom validators.  
+
+#### Validator interface
+
+Your custom validator should implement the interface `ix.ginas.utils.validation.ValidatorPlugin`
+which has 2 methods that need to implemented :
+```java
+ public void validate(T newValue, T oldValue, ValidatorCallback callback);
+   
+
+```
+
+which actually is where you do your validation, and any validation errors or warnings should be passed through the callback parameter.
+
+The other method to implement is :
+
+```java
+  public boolean supports(T newValue, T oldValue, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE methodType) {
+      
+```
+
+where `METHOD_TYPE` is an enum for which type of action is being done: and UPDATE, NEW, BATCH etc.
+
+In both methods if this is a new entity (opposed to an update) then the parameter `oldValue` will be null.
+
+#### Dependency Injection is Allowed
+
+GSRS will create new instances of your validator using reflection and the empty constructor  
+and then will inject dependencies into the validator so you are able to annotate your fields with `@Autowired`
+
+```java
+public class MyValidator implements ValidatorPlugin<MyEntity> {
+    @Autowired
+    private MyRepository repository;
+
+    @Override
+    public void validate(MyEntity newValue, MyEntity oldValue, ValidatorCallback callback) {
+        //... use the repository field to validate my object
+    }
+ //...
+}
+```

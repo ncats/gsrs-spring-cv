@@ -20,6 +20,6 @@ public class ValidatorFactoryConfiguration {
     private String example;
 
     public List<ValidatorFactoryService.ValidatorConfig> getValidatorConfigByContext(String context){
-        return (List<ValidatorFactoryService.ValidatorConfig> ) validators.getOrDefault(context, Collections.emptyList());
+        return validators.getOrDefault(context, Collections.emptyList());
     }
 }

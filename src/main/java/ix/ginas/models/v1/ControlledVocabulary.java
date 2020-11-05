@@ -1,6 +1,7 @@
 package ix.ginas.models.v1;
 
 //import com.example.demo.GsrsAnalyzers;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -47,10 +48,10 @@ public class ControlledVocabulary extends IxModel {
     //as the JSON is used in the forms. Now that the ID is explicitly
     //ignored in the load, we should be fine. 
     
-    //@JsonIgnore
-    public Long getId() {
-        return this.id;
-    }
+//    @JsonIgnore
+//    public Long getId() {
+//        return this.id;
+//    }
 	
     @Column(unique = true)
     @Indexable(name = "Domain", facet = true)
