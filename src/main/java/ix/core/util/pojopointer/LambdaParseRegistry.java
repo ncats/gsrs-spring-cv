@@ -68,8 +68,9 @@ public class LambdaParseRegistry implements ApplicationListener<ContextRefreshed
 			map.put("limit", LongBasedLambdaArgumentParser.of("limit", (p) -> new LimitPath(p)));
 			map.put("skip", LongBasedLambdaArgumentParser.of("skip", (p) -> new SkipPath(p)));
 
-			for(String className : registeredFunctionProperties.getRegisteredfunctions()){
+			for(Map<String, Object> m : registeredFunctionProperties.getRegisteredfunctions()){
 				try{
+					String className = (String) m.get("class");
 					Class<?> c = ClassUtils.forName(className, null);
 					RegisteredFunction rf = (RegisteredFunction) c.getDeclaredConstructor().newInstance();
 					AutowireHelper.getInstance().autowire(rf);
