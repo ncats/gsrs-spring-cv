@@ -107,3 +107,32 @@ public class MyValidator implements ValidatorPlugin<MyEntity> {
  //...
 }
 ```
+
+#### Adding your custom Validator
+  Once you have your custom `ValidatorPlugin` add it to your conf file in `gsrs.validators.<your-context>` as a list
+  of `ValidationConfig` objects where the object for `ValidationConfig` looks like:
+  ```java
+class ValidatorConfig{
+
+
+        private Class validatorClass;
+        /**
+         * Additional parameters to initialize in your instance returned by
+         * {@link #getValidatorClass()}.
+         */
+        private Map<String, Object> parameters;
+        private Class newObjClass;
+        private METHOD_TYPE methodType;
+}
+```
+  
+  For example, if your context is `vocabularies`, and you have validator that checks for Duplicates your conf would look like:
+  
+  ```
+gsrs.validators.vocabularies = [
+    {
+        "validatorClass" = "gsrs.vocab.DuplicateDomainValidator",
+         "newObjClass" = "ix.ginas.models.v1.ControlledVocabulary",
+    }
+]
+```
