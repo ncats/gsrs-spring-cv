@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = LuceneSpringDemoApplication.class)
 @DataJpaTest
 @ActiveProfiles("test")
-@Import({ClearAuditorRule.class , AuditConfig.class, AutowireHelper.class, GsrsSecurityConfig.class})
+@Import({ClearAuditorRule.class , ClearTextIndexerRule.class, AuditConfig.class, AutowireHelper.class, GsrsSecurityConfig.class})
 public class ControlledVocabRepositoryTest {
 
     @TestConfiguration
@@ -52,6 +52,10 @@ public class ControlledVocabRepositoryTest {
     @Autowired
     @RegisterExtension
     ClearAuditorRule clearAuditorRule;
+
+    @Autowired
+    @RegisterExtension
+    ClearTextIndexerRule clearTextIndexerRule;
 
     @RegisterExtension
     TimeTraveller timeTraveller = new TimeTraveller(LocalDate.of(1955, 11, 05));

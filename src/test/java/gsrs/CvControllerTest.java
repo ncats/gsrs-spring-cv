@@ -3,6 +3,8 @@ package gsrs;
 import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.security.GsrsSecurityConfig;
 import gsrs.springUtils.AutowireHelper;
+import ix.core.search.text.TextIndexerEntityListener;
+import ix.core.search.text.TextIndexerFactory;
 import ix.ginas.models.v1.ControlledVocabulary;
 import ix.ginas.models.v1.VocabularyTerm;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +13,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -41,13 +45,16 @@ import static org.hamcrest.Matchers.*;
 //this not only wipes out the loaded data but resets all auto increment counters.
 //without this even if we remove all entities from the repository after each test, the ids wouldn't reset back to 1
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({ClearAuditorRule.class , AuditConfig.class, AutowireHelper.class, GsrsSecurityConfig.class})
+@Import({ClearAuditorRule.class , ClearTextIndexerRule.class, AuditConfig.class, AutowireHelper.class, GsrsSecurityConfig.class, TextIndexerEntityListener.class})
 @Transactional
 public class CvControllerTest {
 
     @Autowired
     @RegisterExtension
     ClearAuditorRule clearAuditorRule;
+    @Autowired
+    @RegisterExtension
+    ClearTextIndexerRule clearTextIndexerRule;
 
     @RegisterExtension
     TimeTraveller timeTraveller = new TimeTraveller(LocalDate.of(1955, 11, 05));

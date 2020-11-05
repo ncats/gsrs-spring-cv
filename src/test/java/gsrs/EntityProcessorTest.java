@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @ContextConfiguration(classes = LuceneSpringDemoApplication.class)
 @ActiveProfiles("test")
-@Import({ClearAuditorRule.class , AuditConfig.class, AutowireHelper.class, GsrsSecurityConfig.class})
+@Import({ClearAuditorRule.class ,ClearTextIndexerRule.class,  AuditConfig.class, AutowireHelper.class, GsrsSecurityConfig.class})
 public class EntityProcessorTest {
 
     private static List<String> list = new ArrayList<>();
@@ -41,6 +41,10 @@ public class EntityProcessorTest {
 
     @Autowired
     private PrincipalRepository principalRepository;
+
+    @Autowired
+    @RegisterExtension
+    ClearTextIndexerRule clearTextIndexerRule;
 
     @Autowired
     @RegisterExtension
