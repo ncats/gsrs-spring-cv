@@ -36,6 +36,51 @@ include "gsrs-core.conf"
 #put your customization and overrides here:
 ```
 
+## Creating your GSRS Controller
+GSRS uses a standardized API for fetching, updating, validating and loading entity data.
+
+To make sure the routes are formatted correctly and that all entities follow the same API contract, the GSRS Controller that creates these standardized routes
+is an abstract class, `AbstractGsrsEntityController`. You need to extend this class and implement the few abstract methods
+to hook in your own entity.
+
+### Indexing
+To maintain backwards compatibility with GSRS 2, a special controller that follows the GSRS 2 Lucene based TextIndexer
+can be used instead if you want to use this, extend `AbstractLegacyTextSearchGsrsEntityController` which is a subclass of 
+`AbstractGsrsEntityController` that adds the text search routes.
+
+### GSRS Controller Annotations
+
+Your concrete controller class that extends the abstract GSRSEntityController must be annotated with
+`@GsrsRestApiController` along with setting the fields for `context` and `idHelper`
+The abstract controller constructor also takes the context as a String so a good practice 
+is to make your context a public static final String so you can reference it in both places
+so they always match.
+
+```java
+@GsrsRestApiController(context =CvController.CONTEXT,  idHelper = IdHelpers.NUMBER)
+public class CvController extends AbstractLegacyTextSearchGsrsEntityController<ControlledVocabulary, Long> {
+    public static final String  CONTEXT = "vocabularies";
+
+    
+    public CvController() {
+        super(CONTEXT);
+    }
+
+    @Autowired
+    private ControlledVocabularyRepository repository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+// ... implement abstract methods
+
+}
+```
+
+### Entity Context
+The root part of the entity routes is also `api/v1/` followed by a String GSRS calls the `context`.  The Context
+is what will differentiate your entity routes from all the other entities. 
+
 ## Customizations:
 
 ### Custom IndexValueMakers
@@ -86,7 +131,8 @@ The other method to implement is :
       
 ```
 
-where `METHOD_TYPE` is an enum for which type of action is being done: and UPDATE, NEW, BATCH etc.
+where `METHOD_TYPE` is an enum for which type of action is being done: and UPDATE, NEW, BATCH etc.  
+When GSRS validates an entity, it will first call the supports method and then only if that method returns `true` will it call the validate() method.
 
 In both methods if this is a new entity (opposed to an update) then the parameter `oldValue` will be null.
 
@@ -136,3 +182,4 @@ gsrs.validators.vocabularies = [
     }
 ]
 ```
+

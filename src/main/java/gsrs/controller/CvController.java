@@ -116,7 +116,7 @@ public class CvController extends AbstractLegacyTextSearchGsrsEntityController<C
     }
 
     @Override
-    protected ControlledVocabulary create(ControlledVocabulary controlledVocabulary) {
+    protected ControlledVocabulary save(ControlledVocabulary controlledVocabulary) {
         return repository.save(controlledVocabulary);
     }
 

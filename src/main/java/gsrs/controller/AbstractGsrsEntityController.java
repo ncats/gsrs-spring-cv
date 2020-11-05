@@ -4,33 +4,19 @@ package gsrs.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.ncats.common.util.CachedSupplier;
-import gsrs.legacy.LegacyGsrsSearchService;
-import gsrs.springUtils.GsrsSpringUtils;
 import gsrs.validator.ValidatorFactoryService;
-import ix.core.models.ETag;
-import ix.core.search.SearchOptions;
-import ix.core.search.SearchRequest;
-import ix.core.search.SearchResult;
-import ix.core.search.text.FacetMeta;
 import ix.core.search.text.ReflectingIndexValueMaker;
-import ix.core.search.text.TextIndexer;
-import ix.core.search.text.TextIndexerFactory;
 import ix.core.util.EntityUtils;
 import ix.core.util.pojopointer.PojoPointer;
-import ix.core.validator.GinasProcessingMessage;
 import ix.core.validator.ValidationResponse;
-import ix.core.validator.ValidationResponseBuilder;
 import ix.core.validator.Validator;
-import ix.ginas.models.v1.ControlledVocabulary;
 import ix.ginas.utils.validation.ValidatorFactory;
-import ix.utils.Util;
 import ix.utils.pojopatch.PojoDiff;
 import ix.utils.pojopatch.PojoPatch;
 import lombok.Data;
 //import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 //import org.hibernate.search.engine.search.predicate.dsl.PredicateFinalStep;
 //import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -43,11 +29,9 @@ import org.springframework.web.servlet.resource.ResourceUrlProvider;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  *  Abstract GSRS Controller that generates all the
@@ -76,6 +60,11 @@ public abstract class AbstractGsrsEntityController<T, I> {
     private final String context;
 
     private CachedSupplier<ValidatorFactory> validatorFactory;
+
+    /**
+     * Create a new GSRS Controller with the given context.
+     * @param context
+     */
     public AbstractGsrsEntityController(String context) {
         this.context = context;
     }
@@ -85,49 +74,186 @@ public abstract class AbstractGsrsEntityController<T, I> {
         validatorFactory = CachedSupplier.runOnce(()->validatorFactoryService.newFactory(context, mapper));
     }
 
+    /**
+     * Create a new instance of your entity type from the provided JSON.
+     * Perform any object clean up or "data cleansing" here.
+     *
+     * @param json the JSON to use; will never be null.
+     *
+     * @return a new entity instance will never be null.
+     *
+     * @throws IOException if there's a problem processing the JSON.
+     */
     protected abstract T fromNewJson(JsonNode json) throws IOException;
-
+    /**
+     * Create List of  new instances of your entity type from the provided JSON which
+     * is a List of entities.
+     * Perform any object clean up or "data cleansing" here.
+     *
+     * @param list the JSON to use; will never be null.
+     *
+     * @return a new List of instances will never be null and probably shouldn't be empty.
+     *
+     * @throws IOException if there's a problem processing the JSON.
+     */
     protected abstract List<T> fromNewJsonList(JsonNode list) throws IOException;
+    /**
+     * Create a instance of your entity type from the provided JSON representing
+     * an updated version of a  record.
+     * Perform any object clean up or "data cleansing" here but keep in mind different data cleansings
+     * might be done on new vs updated records.
+     *
+     * @param json the JSON to use; will never be null.
+     *
+     * @return a new entity instance will never be null.
+     *
+     * @throws IOException if there's a problem processing the JSON.
+     */
     protected abstract T fromUpdatedJson(JsonNode json) throws IOException;
-
+    /**
+     * Create List of  instances of your entity type from the provided JSON which
+     * is a List of updated versions of records.
+     * Perform any object clean up or "data cleansing" here  here but keep in mind different data cleansings
+     * might be done on new vs updated records.
+     *
+     * @param list the JSON to use; will never be null.
+     *
+     * @return a new List of instances will never be null and probably shouldn't be empty.
+     *
+     * @throws IOException if there's a problem processing the JSON.
+     */
     protected abstract List<T> fromUpdatedJsonList(JsonNode list) throws IOException;
 
+    /**
+     * Create a JSON representation of your entity.
+     * @param t
+     * @return
+     * @throws IOException
+     */
     protected abstract JsonNode toJson(T t) throws IOException;
 
-    protected abstract T create(T t);
+    /**
+     * Save the given entity to your data repository.
+     * @param t the entity to save.
+     * @return the new saved entity, usually this is the same object as the t passed in but it doesn't have to be.
+     * The returned object may have different fields set like id, or audit information etc.
+     */
+    protected abstract T save(T t);
 
+    /**
+     * Get the number of entities in your data repository.
+     * @return a number &ge;0.
+     */
     protected abstract long count();
 
+    /**
+     * Get the entity from your data repository with the given id.
+     * @param id the id to use to look up the entity.
+     * @return an Optional that is empty if there is no entity with the given id;
+     * or an Optional that has the found entity.
+     */
     protected abstract Optional<T> get(I id);
 
+    /**
+     * Parse the Id from the given String.
+     * @param idAsString the String to parse into an ID.
+     * @return the ID as the correct type.
+     */
     protected abstract I parseIdFromString(String idAsString);
 
+    /**
+     * Fetch an entity from the data repository using a unique
+     * identifier that isn't the entity's ID.
+     *
+     * @param someKindOfId a String that isn't the ID of the entity.
+     * @return an Optional that is empty if there is no entity with the given id;
+     *  or an Optional that has the found entity.
+     */
     protected abstract Optional<T> flexLookup(String someKindOfId);
+    /**
+     * Fetch an entity's real ID from the data repository using a unique
+     * identifier that isn't the entity's ID.  Override this method
+     * if a more effienient query can be made rather than fetching the whole record.
+     *
+     * @implSpec the default implementation of this method is:
+     * <pre>
+     * {@code
+     *  Optional<T> opt = flexLookup(someKindOfId);
+     *  if(!opt.isPresent()){
+     *     return Optional.empty();
+     *  }
+     *  return Optional.of(getIdFrom(opt.get()));
+     * }
+     * </pre>
+     * @param someKindOfId a String that isn't the ID of the entity.
+     * @return an Optional that is empty if there is no entity with the given id;
+     *  or an Optional that has the found entity's ID.
+     */
+    protected Optional<I> flexLookupIdOnly(String someKindOfId){
+        Optional<T> opt = flexLookup(someKindOfId);
+        if(!opt.isPresent()){
+            return Optional.empty();
+        }
+        return Optional.of(getIdFrom(opt.get()));
+    }
 
-    protected abstract Optional<I> flexLookupIdOnly(String someKindOfId);
-
+    /**
+     * Get the Class of the Entity.
+     * @return a Class; will never be {@code null}.
+     */
     protected abstract Class<T> getEntityClass();
 
+    /**
+     * Return a {@link Page} of entities from the repository using the
+     * given offset, num records and sort order.
+     * @param offset the number of records to start at ( 0-based).
+     * @param numOfRecords the number of records to include in the page.
+     * @param sort the {@link Sort} to use.
+     * @return the Page from the repository.
+     *
+     * @see OffsetBasedPageRequest
+     */
     protected abstract Page page(long offset, long numOfRecords, Sort sort);
 
+    /**
+     * Remove the given entity from the repository.
+     * @param id the id of the entity to delete.
+     */
     protected abstract void delete(I id);
 
+    /**
+     * Get the ID from the entity.
+     * @param entity the entity to get the id of.
+     * @return the ID of this entity.
+     */
+    //TODO should this be turned into a Function so we can pass a method reference in constructor?
     protected abstract I getIdFrom(T entity);
 
+    /**
+     * Update the given entity in the repository.
+     * @param t the entity to update.
+     * @return the new saved entity, usually this is the same object as the t passed in but it doesn't have to be.
+     * The returned object may have different fields set like  audit information etc.
+     */
     protected abstract T update(T t);
 
-    protected GsrsControllerConfiguration getGsrsControllerConfiguration(){
+    /**
+     * Get the {@link GsrsControllerConfiguration} that was injected into this controller.
+     * @return
+     */
+    protected final GsrsControllerConfiguration getGsrsControllerConfiguration(){
         return gsrsControllerConfiguration;
     }
-    @GetGsrsRestApiMapping("/{id:$ID}/index")
-    public void indexInfo(@PathVariable String id ){
-        Optional<T> t = get(parseIdFromString(id));
-        if(t.isPresent()){
-            new ReflectingIndexValueMaker().createIndexableValues(t.get(), iv->{
-                System.out.println("name = " + iv.name()+  " + path = " + iv.path() + " value =  " + iv.value());
-            });
-        }
-    }
+
+//    @GetGsrsRestApiMapping("/{id:$ID}/index")
+//    public void indexInfo(@PathVariable String id ){
+//        Optional<T> t = get(parseIdFromString(id));
+//        if(t.isPresent()){
+//            new ReflectingIndexValueMaker().createIndexableValues(t.get(), iv->{
+//                System.out.println("name = " + iv.name()+  " + path = " + iv.path() + " value =  " + iv.value());
+//            });
+//        }
+//    }
     @PostGsrsRestApiMapping()
     public ResponseEntity<Object> createEntity(@RequestBody JsonNode newEntityJson) throws IOException {
         T newEntity = fromNewJson(newEntityJson);
@@ -137,7 +263,7 @@ public abstract class AbstractGsrsEntityController<T, I> {
         if(resp!=null && !resp.isValid()){
             return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(create(newEntity), HttpStatus.CREATED);
+        return new ResponseEntity<>(save(newEntity), HttpStatus.CREATED);
 
     }
 
