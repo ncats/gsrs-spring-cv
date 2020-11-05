@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.ncats.common.util.CachedSupplier;
 import gsrs.validator.ValidatorFactoryService;
-import ix.core.search.text.ReflectingIndexValueMaker;
 import ix.core.util.EntityUtils;
 import ix.core.util.pojopointer.PojoPointer;
 import ix.core.validator.ValidationResponse;
@@ -138,7 +137,7 @@ public abstract class AbstractGsrsEntityController<T, I> {
      * @return the new saved entity, usually this is the same object as the t passed in but it doesn't have to be.
      * The returned object may have different fields set like id, or audit information etc.
      */
-    protected abstract T save(T t);
+    protected abstract T create(T t);
 
     /**
      * Get the number of entities in your data repository.
@@ -263,7 +262,7 @@ public abstract class AbstractGsrsEntityController<T, I> {
         if(resp!=null && !resp.isValid()){
             return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(save(newEntity), HttpStatus.CREATED);
+        return new ResponseEntity<>(create(newEntity), HttpStatus.CREATED);
 
     }
 
