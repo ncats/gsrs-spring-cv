@@ -2,8 +2,10 @@ package gsrs.controller;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import gsrs.legacy.LegacyGsrsSearchService;
 import gsrs.springUtils.GsrsSpringUtils;
+import gsrs.validator.ValidatorFactoryService;
 import ix.core.models.ETag;
 import ix.core.search.SearchOptions;
 import ix.core.search.SearchRequest;
@@ -14,7 +16,12 @@ import ix.core.search.text.TextIndexer;
 import ix.core.search.text.TextIndexerFactory;
 import ix.core.util.EntityUtils;
 import ix.core.util.pojopointer.PojoPointer;
+import ix.core.validator.GinasProcessingMessage;
+import ix.core.validator.ValidationResponse;
+import ix.core.validator.ValidationResponseBuilder;
+import ix.core.validator.Validator;
 import ix.ginas.models.v1.ControlledVocabulary;
+import ix.ginas.utils.validation.ValidatorFactory;
 import ix.utils.Util;
 import ix.utils.pojopatch.PojoDiff;
 import ix.utils.pojopatch.PojoPatch;
@@ -32,12 +39,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  *  Abstract GSRS Controller that generates all the
@@ -56,6 +65,24 @@ public abstract class AbstractGsrsEntityController<T, I> {
     @Autowired
     private GsrsControllerConfiguration gsrsControllerConfiguration;
 
+    @Autowired
+    private ValidatorFactoryService validatorFactoryService;
+
+    @Autowired
+    private ObjectMapper mapper;
+
+
+    private final String context;
+
+    private ValidatorFactory validatorFactory;
+    public AbstractGsrsEntityController(String context) {
+        this.context = context;
+    }
+
+    @PostConstruct
+    private void initValidator(){
+        validatorFactory = validatorFactoryService.newFactory(context, mapper);
+    }
 
     protected abstract T fromNewJson(JsonNode json) throws IOException;
 
@@ -103,12 +130,70 @@ public abstract class AbstractGsrsEntityController<T, I> {
     @PostGsrsRestApiMapping()
     public ResponseEntity<Object> createEntity(@RequestBody JsonNode newEntityJson) throws IOException {
         T newEntity = fromNewJson(newEntityJson);
-        //TODO add validation in later sprint
+
+        Validator<T> validator  = validatorFactory.createValidatorFor(newEntity, null, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.CREATE);
+        ValidationResponse<T> resp = validator.validate(newEntity, null);
+        if(resp!=null && !resp.isValid()){
+            return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
+        }
         return new ResponseEntity<>(create(newEntity), HttpStatus.CREATED);
 
     }
 
-    @PutGsrsRestApiMapping()
+    /*private void foo(){
+        ValidationResponseBuilder callback = new ValidationUtils.GinasValidationResponseBuilder(objnew, _strategy);
+
+        //turn off duplicate checking in batch mode
+        if(this.method == METHOD_TYPE.BATCH){
+            callback.allowPossibleDuplicates(true);
+        }
+
+        this.validate(objnew, objold, callback);
+        ValidationResponse<Substance> resp =  callback.buildResponse();
+
+        List<GinasProcessingMessage> messages = resp.getValidationMessages()
+                .stream()
+                .filter(m-> m instanceof GinasProcessingMessage)
+                .map(m ->(GinasProcessingMessage)m)
+                .collect(Collectors.toList());
+        messages.stream().forEach( _strategy::processMessage);
+        if(_strategy.handleMessages(objnew, messages)){
+            resp.setValid();
+        }
+        _strategy.addProblems(objnew, messages);
+
+
+
+        if(GinasProcessingMessage.ALL_VALID(messages)){
+            resp.addValidationMessage(GinasProcessingMessage.SUCCESS_MESSAGE("Substance is valid"));
+        }
+        return resp;
+
+
+    }
+
+     */
+    @PostGsrsRestApiMapping("/@validate")
+    public ResponseEntity<Object> validateEntity(@RequestBody JsonNode updatedEntityJson, @RequestParam Map<String, String> queryParameters) throws Exception {
+        T updatedEntity = fromUpdatedJson(updatedEntityJson);
+        //updatedEntity should have the same id
+        I id = getIdFrom(updatedEntity);
+        Optional<T> opt = get(id);
+        Validator<T> validator;
+        if(opt.isPresent()){
+            validator  = validatorFactory.createValidatorFor(updatedEntity, opt.get(), ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.UPDATE);
+
+        }else{
+            validator  = validatorFactory.createValidatorFor(updatedEntity, null, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.CREATE);
+
+        }
+        ValidationResponse<T> resp = validator.validate(updatedEntity, opt.orElse(null));
+
+        //always send 200 even if validation has errors?
+        return new ResponseEntity<>(resp, HttpStatus.OK);
+
+    }
+        @PutGsrsRestApiMapping()
     public ResponseEntity<Object> updateEntity(@RequestBody JsonNode updatedEntityJson, @RequestParam Map<String, String> queryParameters) throws Exception {
         T updatedEntity = fromUpdatedJson(updatedEntityJson);
         //updatedEntity should have the same id
@@ -117,12 +202,20 @@ public abstract class AbstractGsrsEntityController<T, I> {
         if(!opt.isPresent()){
             return gsrsControllerConfiguration.handleBadRequest(queryParameters);
         }
-        //TODO add validation in later sprint
+
         T oldEntity = opt.get();
+
+        Validator<T> validator  = validatorFactory.createValidatorFor(updatedEntity, oldEntity, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE.CREATE);
+        ValidationResponse<T> resp = validator.validate(updatedEntity, oldEntity);
+        if(resp!=null && !resp.isValid()){
+            return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
+        }
+
         PojoPatch<T> patch = PojoDiff.getDiff(oldEntity, updatedEntity);
         System.out.println("changes = " + patch.getChanges());
         patch.apply(oldEntity);
         System.out.println("updated entity = " + oldEntity);
+
         //match 200 status of old GSRS
         return new ResponseEntity<>(update(oldEntity), HttpStatus.OK);
     }

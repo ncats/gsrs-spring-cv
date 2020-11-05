@@ -30,6 +30,9 @@ import java.util.Optional;
  * @param <I>
  */
 public abstract class AbstractLegacyTextSearchGsrsEntityController<T, I> extends AbstractGsrsEntityController<T,I> {
+    public AbstractLegacyTextSearchGsrsEntityController(String context) {
+        super(context);
+    }
 
     @PostGsrsRestApiMapping(value="/@reindex", apiVersions = 1)
     public ResponseEntity forceFullReindex(){

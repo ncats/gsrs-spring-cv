@@ -30,10 +30,15 @@ import java.util.regex.Pattern;
 /**
  * GSRS Rest API controller for the {@link ControlledVocabulary} entity.
  */
-@GsrsRestApiController(context ="vocabularies",  idHelper = IdHelpers.NUMBER)
+@GsrsRestApiController(context =CvController.CONTEXT,  idHelper = IdHelpers.NUMBER)
 public class CvController extends AbstractLegacyTextSearchGsrsEntityController<ControlledVocabulary, Long> {
+    public static final String  CONTEXT = "vocabularies";
 
     private static Pattern NUMBER_PATTERN = Pattern.compile("^"+ IdHelpers.NUMBER.getRegexAsString()+"$");
+
+    public CvController() {
+        super(CONTEXT);
+    }
 
     @Autowired
     private ControlledVocabularyRepository repository;
