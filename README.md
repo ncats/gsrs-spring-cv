@@ -22,6 +22,19 @@ This is a Spring Boot application and can be run using the provided maven wrappe
 ```
 
 Or from inside your IDE, you can run the main method on the Application class in the gsrs package.
+## Configuration File
+
+To maintain backwards compatibility with previous version of GSRS,
+The configuration file is in HOCON format and by default 
+will look for `application.conf`.
+
+Default configuration is in the `gsrs-core.conf` file so your `application.conf`
+should start with:
+```
+include "gsrs-core.conf"
+
+#put your customization and overrides here:
+```
 
 ## Customizations:
 
