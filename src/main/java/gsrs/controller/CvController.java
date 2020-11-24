@@ -6,6 +6,7 @@ import gsrs.CvUtils;
 import gsrs.legacy.CvLegacySearchService;
 import gsrs.legacy.LegacyGsrsSearchService;
 import gsrs.repository.ControlledVocabularyRepository;
+import ix.core.models.ETag;
 import ix.core.search.SearchOptions;
 import ix.core.search.SearchRequest;
 import ix.core.search.SearchResult;
@@ -22,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -31,13 +34,12 @@ import java.util.regex.Pattern;
  * GSRS Rest API controller for the {@link ControlledVocabulary} entity.
  */
 @GsrsRestApiController(context =CvController.CONTEXT,  idHelper = IdHelpers.NUMBER)
-public class CvController extends AbstractLegacyTextSearchGsrsEntityController<ControlledVocabulary, Long> {
+public class CvController extends EtagLegacySearchEntityController<ControlledVocabulary, Long> {
     public static final String  CONTEXT = "vocabularies";
 
-    private static Pattern NUMBER_PATTERN = Pattern.compile("^"+ IdHelpers.NUMBER.getRegexAsString()+"$");
 
     public CvController() {
-        super(CONTEXT);
+        super(CONTEXT,  IdHelpers.NUMBER);
     }
 
     @Autowired
@@ -117,7 +119,12 @@ public class CvController extends AbstractLegacyTextSearchGsrsEntityController<C
 
     @Override
     protected ControlledVocabulary create(ControlledVocabulary controlledVocabulary) {
-        return repository.save(controlledVocabulary);
+        try {
+            return repository.saveAndFlush(controlledVocabulary);
+        }catch(Throwable t){
+            t.printStackTrace();
+            throw t;
+        }
     }
 
     @Override
@@ -132,11 +139,11 @@ public class CvController extends AbstractLegacyTextSearchGsrsEntityController<C
 
     @Override
     protected Optional<ControlledVocabulary> flexLookup(String someKindOfId) {
-        Matcher matcher = NUMBER_PATTERN.matcher(someKindOfId);
-        if(matcher.find()){
-            //is an id - this shouldn't happen anymore since we changed the routing to ignore ID
-            return get(parseIdFromString(someKindOfId));
-        }
+//        Matcher matcher = NUMBER_PATTERN.matcher(someKindOfId);
+//        if(matcher.find()){
+//            //is an id - this shouldn't happen anymore since we changed the routing to ignore ID
+//            return get(parseIdFromString(someKindOfId));
+//        }
         //is the string a domain?
         List<ControlledVocabulary> list = repository.findByDomain(someKindOfId);
         if(list.isEmpty()){

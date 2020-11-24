@@ -1,7 +1,7 @@
 package gsrs.vocab;
 
 import gsrs.repository.ControlledVocabularyRepository;
-import gsrs.validator.ValidatorFactoryService;
+import gsrs.validator.ValidatorConfig;
 import ix.core.validator.GinasProcessingMessage;
 import ix.core.validator.ValidatorCallback;
 import ix.ginas.models.v1.ControlledVocabulary;
@@ -35,7 +35,7 @@ public class DuplicateDomainValidator implements ValidatorPlugin<ControlledVocab
     }
 
     @Override
-    public boolean supports(ControlledVocabulary newValue, ControlledVocabulary oldValue, ValidatorFactoryService.ValidatorConfig.METHOD_TYPE methodType) {
+    public boolean supports(ControlledVocabulary newValue, ControlledVocabulary oldValue, ValidatorConfig.METHOD_TYPE methodType) {
         switch(methodType){
             case BATCH:
             case IGNORE:
