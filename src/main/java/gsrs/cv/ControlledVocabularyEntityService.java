@@ -1,44 +1,27 @@
-package gsrs.controller;
+package gsrs.cv;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gsrs.CvUtils;
-import gsrs.legacy.CvLegacySearchService;
-import gsrs.legacy.LegacyGsrsSearchService;
+import gsrs.controller.IdHelpers;
 import gsrs.repository.ControlledVocabularyRepository;
-import ix.core.models.ETag;
-import ix.core.search.SearchOptions;
-import ix.core.search.SearchRequest;
-import ix.core.search.SearchResult;
-import ix.core.search.text.TextIndexer;
+import gsrs.service.AbstractGsrsEntityService;
 import ix.ginas.models.v1.ControlledVocabulary;
-//import org.hibernate.search.backend.lucene.LuceneExtension;
-//import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
-//import org.hibernate.search.engine.search.predicate.dsl.MatchPredicateFieldStep;
-//import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
-//import org.hibernate.search.engine.search.query.SearchResult;
-//import org.hibernate.search.mapper.orm.search.query.dsl.HibernateOrmSearchQuerySelectStep;
-//import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.io.IOException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
+import java.util.Optional;
 
-/**
- * GSRS Rest API controller for the {@link ControlledVocabulary} entity.
- */
-@GsrsRestApiController(context =CvController.CONTEXT,  idHelper = IdHelpers.NUMBER)
-public class CvController extends EtagLegacySearchEntityController<ControlledVocabulary, Long> {
+@Service
+public class ControlledVocabularyEntityService extends AbstractGsrsEntityService<ControlledVocabulary, Long> {
     public static final String  CONTEXT = "vocabularies";
 
 
-    public CvController() {
+    public ControlledVocabularyEntityService() {
         super(CONTEXT,  IdHelpers.NUMBER);
     }
 
@@ -51,21 +34,15 @@ public class CvController extends EtagLegacySearchEntityController<ControlledVoc
 //    @Autowired
 //    private CvSearchService searchService;
 
-    @Autowired
-    private CvLegacySearchService cvLegacySearchService;
+
 
     @Override
-    protected LegacyGsrsSearchService<ControlledVocabulary> getlegacyGsrsSearchService() {
-        return cvLegacySearchService;
-    }
-
-    @Override
-    protected Class<ControlledVocabulary> getEntityClass() {
+    public Class<ControlledVocabulary> getEntityClass() {
         return ControlledVocabulary.class;
     }
 
     @Override
-    protected Long parseIdFromString(String idAsString) {
+    public Long parseIdFromString(String idAsString) {
         return Long.parseLong(idAsString);
     }
 
@@ -76,13 +53,13 @@ public class CvController extends EtagLegacySearchEntityController<ControlledVoc
     }
 
     @Override
-    protected Page page(long offset, long numOfRecords, Sort sort) {
+    public Page page(Pageable pageable) {
 
-        return repository.findAll(new OffsetBasedPageRequest(offset, numOfRecords, sort));
+        return repository.findAll(pageable);
     }
 
     @Override
-    protected void delete(Long id) {
+    public void delete(Long id) {
         repository.deleteById(id);
     }
 
@@ -92,7 +69,7 @@ public class CvController extends EtagLegacySearchEntityController<ControlledVoc
     }
 
     @Override
-    protected Long getIdFrom(ControlledVocabulary entity) {
+    public Long getIdFrom(ControlledVocabulary entity) {
         return entity.getId();
     }
 
@@ -128,17 +105,17 @@ public class CvController extends EtagLegacySearchEntityController<ControlledVoc
     }
 
     @Override
-    protected long count() {
+    public long count() {
         return repository.count();
     }
 
     @Override
-    protected Optional<ControlledVocabulary> get(Long id) {
+    public Optional<ControlledVocabulary> get(Long id) {
         return repository.findById(id);
     }
 
     @Override
-    protected Optional<ControlledVocabulary> flexLookup(String someKindOfId) {
+    public Optional<ControlledVocabulary> flexLookup(String someKindOfId) {
 //        Matcher matcher = NUMBER_PATTERN.matcher(someKindOfId);
 //        if(matcher.find()){
 //            //is an id - this shouldn't happen anymore since we changed the routing to ignore ID
@@ -224,7 +201,7 @@ public class CvController extends EtagLegacySearchEntityController<ControlledVoc
 //            return getlegacyGsrsSearchService().search(searchRequest.getQuery(), searchRequest.getOptions() );
 //
 
-        //        SearchSession session = searchService.createSearchSession();
+    //        SearchSession session = searchService.createSearchSession();
 //        List<ControlledVocabulary> dslHits = parseQueryIntoMatch(query , session).hits();
 //
 //
@@ -255,7 +232,6 @@ public class CvController extends EtagLegacySearchEntityController<ControlledVoc
 //        return hits;
 
 //    }
-
 
 
 

@@ -3,10 +3,14 @@ package ix.ginas.models;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gov.nih.ncats.common.util.TimeUtil;
 import gsrs.*;
+import gsrs.junit.TimeTraveller;
 import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.repository.PrincipalRepository;
 import gsrs.security.GsrsSecurityConfig;
 import gsrs.springUtils.AutowireHelper;
+import gsrs.startertests.AbstractGsrsJpaEntityJunit5Test;
+import gsrs.startertests.GsrsEntityTestConfiguration;
+import gsrs.startertests.GsrsJpaTest;
 import ix.core.models.Keyword;
 import ix.ginas.models.v1.ControlledVocabulary;
 import ix.ginas.models.v1.VocabularyTerm;
@@ -28,11 +32,11 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ContextConfiguration(classes = LuceneSpringDemoApplication.class)
-@DataJpaTest
+@ContextConfiguration(classes = {LuceneSpringDemoApplication.class})
+@GsrsJpaTest
 @ActiveProfiles("test")
-@Import({ClearAuditorRule.class , ClearTextIndexerRule.class, AuditConfig.class, AutowireHelper.class, GsrsSecurityConfig.class})
-public class ControlledVocabRepositoryTest {
+@Import({GsrsSecurityConfig.class, ControlledVocabRepositoryTest.TestConfig.class})
+public class ControlledVocabRepositoryTest extends AbstractGsrsJpaEntityJunit5Test {
 
     @TestConfiguration
     public static class TestConfig {
@@ -40,6 +44,8 @@ public class ControlledVocabRepositoryTest {
         public ObjectMapper objectMapper(){
             return new ObjectMapper();
         }
+
+
     }
     @Autowired
     private ObjectMapper objectMapper;
@@ -49,13 +55,6 @@ public class ControlledVocabRepositoryTest {
     @Autowired
     private PrincipalRepository principalRepository;
 
-    @Autowired
-    @RegisterExtension
-    ClearAuditorRule clearAuditorRule;
-
-    @Autowired
-    @RegisterExtension
-    ClearTextIndexerRule clearTextIndexerRule;
 
     @RegisterExtension
     TimeTraveller timeTraveller = new TimeTraveller(LocalDate.of(1955, 11, 05));

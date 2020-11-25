@@ -1,5 +1,6 @@
-package gsrs.indexer;
+package gsrs.cv;
 
+import gsrs.indexer.EntitySearchService;
 import ix.ginas.models.v1.ControlledVocabulary;
 import org.springframework.stereotype.Service;
 

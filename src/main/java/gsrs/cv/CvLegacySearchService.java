@@ -1,5 +1,6 @@
-package gsrs.legacy;
+package gsrs.cv;
 
+import gsrs.legacy.LegacyGsrsSearchService;
 import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.repository.GsrsRepository;
 import ix.ginas.models.v1.ControlledVocabulary;
