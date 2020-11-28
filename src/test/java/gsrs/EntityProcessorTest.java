@@ -50,9 +50,8 @@ public class EntityProcessorTest extends AbstractGsrsJpaEntityJunit5Test {
         list.clear();
     }
 
-    @Autowired
     @RegisterExtension
-    ResetAllEntityProcessorBeforeEachExtension resetAllEntityProcessorBeforeEachExtension;
+    ResetAllEntityProcessorBeforeEachExtension resetAllEntityProcessorBeforeEachExtension = new ResetAllEntityProcessorBeforeEachExtension();
 
     @Autowired
     private ControlledVocabularyRepository repository;

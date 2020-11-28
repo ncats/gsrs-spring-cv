@@ -7,7 +7,7 @@ import gsrs.junit.TimeTraveller;
 import gsrs.service.GsrsEntityService;
 import gsrs.startertests.jupiter.AbstractGsrsJpaEntityJunit5Test;
 import gsrs.startertests.GsrsJpaTest;
-import gsrs.startertests.jupiter.ResetAllCacheSupplierExtension;
+import gsrs.startertests.jupiter.ResetAllCacheSupplierBeforeEachExtension;
 import gsrs.startertests.TestGsrsValidatorFactory;
 import gsrs.validator.ValidatorConfig;
 import ix.core.validator.GinasProcessingMessage;
@@ -47,9 +47,8 @@ public class CvServiceTest extends AbstractGsrsJpaEntityJunit5Test {
         }
     }
 
-    @Autowired
     @RegisterExtension
-    ResetAllCacheSupplierExtension resetAllCacheSupplierExtension;
+    ResetAllCacheSupplierBeforeEachExtension resetAllCacheSupplierExtension = new ResetAllCacheSupplierBeforeEachExtension();
 
     @Autowired
     private ControlledVocabularyEntityService controlledVocabularyEntityService;
