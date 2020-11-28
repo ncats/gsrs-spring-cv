@@ -8,7 +8,7 @@ import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.repository.PrincipalRepository;
 import gsrs.security.GsrsSecurityConfig;
 import gsrs.springUtils.AutowireHelper;
-import gsrs.startertests.AbstractGsrsJpaEntityJunit5Test;
+import gsrs.startertests.jupiter.AbstractGsrsJpaEntityJunit5Test;
 import gsrs.startertests.GsrsEntityTestConfiguration;
 import gsrs.startertests.GsrsJpaTest;
 import ix.core.models.Keyword;

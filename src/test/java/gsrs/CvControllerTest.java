@@ -4,7 +4,7 @@ import gsrs.junit.TimeTraveller;
 import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.security.GsrsSecurityConfig;
 import gsrs.springUtils.AutowireHelper;
-import gsrs.startertests.AbstractGsrsJpaEntityJunit5Test;
+import gsrs.startertests.jupiter.AbstractGsrsJpaEntityJunit5Test;
 import gsrs.startertests.GsrsJpaTest;
 import ix.core.search.text.TextIndexerEntityListener;
 import ix.core.search.text.TextIndexerFactory;

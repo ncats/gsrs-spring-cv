@@ -5,10 +5,10 @@ import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.repository.PrincipalRepository;
 import gsrs.security.GsrsSecurityConfig;
 import gsrs.springUtils.AutowireHelper;
-import gsrs.startertests.ClearAuditorRule;
-import gsrs.startertests.ClearTextIndexerRule;
 import gsrs.startertests.GsrsJpaTest;
 import gsrs.startertests.TestEntityProcessorFactory;
+import gsrs.startertests.jupiter.AbstractGsrsJpaEntityJunit5Test;
+import gsrs.startertests.jupiter.ResetAllEntityProcessorBeforeEachExtension;
 import ix.core.EntityProcessor;
 import ix.ginas.models.ControlledVocabRepositoryTest;
 import ix.ginas.models.v1.ControlledVocabulary;
@@ -36,25 +36,23 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = {LuceneSpringDemoApplication.class})
 @GsrsJpaTest
 @ActiveProfiles("test")
-@Import({GsrsSecurityConfig.class, EntityProcessorTest.TestConfig.class})
+@Import({GsrsSecurityConfig.class})
 //@EnableAutoConfiguration(exclude= ConfigBasedEntityProcessorConfiguration.class)
-public class EntityProcessorTest {
+public class EntityProcessorTest extends AbstractGsrsJpaEntityJunit5Test {
 
 
-    @TestConfiguration
-    public static class TestConfig{
-        @Bean
-        @Primary
-        public EntityProcessorFactory entityProcessorFactory(){
-            return new TestEntityProcessorFactory(new MyEntityProcessor());
-        }
-    }
     private static List<String> list = new ArrayList<>();
 
     @BeforeEach
     public void clearList(){
+        testEntityProcessorFactory.clearAll();
+        testEntityProcessorFactory.addEntityProcessor(new MyEntityProcessor());
         list.clear();
     }
+
+    @Autowired
+    @RegisterExtension
+    ResetAllEntityProcessorBeforeEachExtension resetAllEntityProcessorBeforeEachExtension;
 
     @Autowired
     private ControlledVocabularyRepository repository;
@@ -62,6 +60,8 @@ public class EntityProcessorTest {
     @Autowired
     private PrincipalRepository principalRepository;
 
+    @Autowired
+    private TestEntityProcessorFactory testEntityProcessorFactory;
 
     @Test
     public void prePersist(){
