@@ -9,6 +9,8 @@ import gsrs.startertests.jupiter.AbstractGsrsJpaEntityJunit5Test;
 import gsrs.startertests.GsrsJpaTest;
 import gsrs.startertests.jupiter.ResetAllCacheSupplierBeforeEachExtension;
 import gsrs.startertests.TestGsrsValidatorFactory;
+import gsrs.startertests.jupiter.ResetAllEntityProcessorBeforeEachExtension;
+import gsrs.startertests.jupiter.ResetAllEntityServicesBeforeEachExtension;
 import gsrs.validator.ValidatorConfig;
 import ix.core.validator.GinasProcessingMessage;
 import ix.core.validator.ValidationMessage;
@@ -47,8 +49,10 @@ public class CvServiceTest extends AbstractGsrsJpaEntityJunit5Test {
         }
     }
 
+    //we have to reset the EntityService for each test because the entity service
+    //caches the validators to use for each context and our tests change the validations each time.
     @RegisterExtension
-    ResetAllCacheSupplierBeforeEachExtension resetAllCacheSupplierExtension = new ResetAllCacheSupplierBeforeEachExtension();
+    ResetAllEntityServicesBeforeEachExtension resetAllEntityServicesBeforeEachExtension = new ResetAllEntityServicesBeforeEachExtension();
 
     @Autowired
     private ControlledVocabularyEntityService controlledVocabularyEntityService;

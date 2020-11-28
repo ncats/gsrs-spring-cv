@@ -37,7 +37,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @GsrsJpaTest
 @ActiveProfiles("test")
 @Import({GsrsSecurityConfig.class})
-//@EnableAutoConfiguration(exclude= ConfigBasedEntityProcessorConfiguration.class)
 public class EntityProcessorTest extends AbstractGsrsJpaEntityJunit5Test {
 
 
@@ -45,13 +44,10 @@ public class EntityProcessorTest extends AbstractGsrsJpaEntityJunit5Test {
 
     @BeforeEach
     public void clearList(){
-        testEntityProcessorFactory.clearAll();
-        testEntityProcessorFactory.addEntityProcessor(new MyEntityProcessor());
+        testEntityProcessorFactory.setEntityProcessors(new MyEntityProcessor());
         list.clear();
     }
 
-    @RegisterExtension
-    ResetAllEntityProcessorBeforeEachExtension resetAllEntityProcessorBeforeEachExtension = new ResetAllEntityProcessorBeforeEachExtension();
 
     @Autowired
     private ControlledVocabularyRepository repository;
