@@ -1,0 +1,73 @@
+package gsrs.security;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationTrustResolver;
+import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+@Configuration
+@Order(2)
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(securedEnabled = true,
+proxyTargetClass = true,
+prePostEnabled = true)
+public class GsrsSecurityConfig extends WebSecurityConfigurerAdapter {
+
+//   @Bean
+//   public AuthenticationTrustResolver authenticationTrustResolver(){
+//       return new AuthenticationTrustResolverImpl();
+//   }
+//
+//    @Override
+//    @Bean
+//    public AuthenticationManager authenticationManagerBean() throws Exception {
+//        return super.authenticationManagerBean();
+//    }
+//    @Override
+//    protected void configure(AuthenticationManagerBuilder auth) throws Exception
+//    {
+//        auth.parentAuthenticationManager(authenticationManagerBean())
+//        .userDetailsService(userDetailsService());
+//    }
+@Autowired
+private LegacyGsrsAuthenticationProvider legacyGsrsAuthenticationProvider;
+
+@Autowired
+private LegacyAuthenticationFilter filter;
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+//        super.configure(auth);
+        auth.eraseCredentials(false);
+//        auth.parentAuthenticationManager(authenticationManagerBean());
+        auth.authenticationProvider(this.legacyGsrsAuthenticationProvider);
+//        auth.userDetailsService(userDetailsService());
+    }
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+//        http.authorizeRequests().antMatchers("/h2-console/**").permitAll()
+//                .and().csrf().ignoringAntMatchers("/h2-console/**")
+//                .and().headers().frameOptions().sameOrigin();
+//
+//        http.csrf().disable();
+        http.authorizeRequests().anyRequest().authenticated();
+//                .
+//                .antMatchers("/**")
+//                .permitAll()
+//                .and()
+//                .httpBasic()
+//        .and()
+//        .formLogin();
+
+        http.addFilterBefore(filter, BasicAuthenticationFilter.class);
+    }
+}

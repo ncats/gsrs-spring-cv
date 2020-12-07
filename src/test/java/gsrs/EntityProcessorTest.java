@@ -3,7 +3,6 @@ package gsrs;
 import gsrs.entityProcessor.ConfigBasedEntityProcessorConfiguration;
 import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.repository.PrincipalRepository;
-import gsrs.security.GsrsSecurityConfig;
 import gsrs.springUtils.AutowireHelper;
 import gsrs.startertests.GsrsJpaTest;
 import gsrs.startertests.TestEntityProcessorFactory;
@@ -36,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = {LuceneSpringDemoApplication.class})
 @GsrsJpaTest
 @ActiveProfiles("test")
-@Import({GsrsSecurityConfig.class})
+//@Import({GsrsSecurityConfig.class})
 public class EntityProcessorTest extends AbstractGsrsJpaEntityJunit5Test {
 
 

@@ -6,7 +6,7 @@ import gsrs.*;
 import gsrs.junit.TimeTraveller;
 import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.repository.PrincipalRepository;
-import gsrs.security.GsrsSecurityConfig;
+
 import gsrs.springUtils.AutowireHelper;
 import gsrs.startertests.jupiter.AbstractGsrsJpaEntityJunit5Test;
 import gsrs.startertests.GsrsEntityTestConfiguration;
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = {LuceneSpringDemoApplication.class})
 @GsrsJpaTest
 @ActiveProfiles("test")
-@Import({GsrsSecurityConfig.class, ControlledVocabRepositoryTest.TestConfig.class})
+@Import({/*GsrsSecurityConfig.class, */ControlledVocabRepositoryTest.TestConfig.class})
 public class ControlledVocabRepositoryTest extends AbstractGsrsJpaEntityJunit5Test {
 
     @TestConfiguration

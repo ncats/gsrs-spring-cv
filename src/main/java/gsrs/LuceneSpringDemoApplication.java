@@ -8,11 +8,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 @SpringBootApplication
 @EnableConfigurationProperties
-@EnableWebSecurity
+
 @EnableGsrsJpaEntities
 @EnableGsrsApi
 @EntityScan(basePackages ={"ix","gsrs", "gov.nih.ncats"} )
@@ -20,6 +21,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 //@EnableJpaRepositories(basePackageClasses = { ControlledVocabularyRepository.class, GroupRepository.class})
 //@ComponentScan(basePackageClasses = {LuceneSpringDemoApplication.class, GroupRepository.class,  IxMarker.class,  CvController.class})
 //@EntityScan(basePackageClasses = {Group.class, ControlledVocabulary.class})
+@EnableGsrsLegacyAuthentication
 public class LuceneSpringDemoApplication {
 
 

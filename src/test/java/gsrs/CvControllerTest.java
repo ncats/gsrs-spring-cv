@@ -2,7 +2,6 @@ package gsrs;
 
 import gsrs.junit.TimeTraveller;
 import gsrs.repository.ControlledVocabularyRepository;
-import gsrs.security.GsrsSecurityConfig;
 import gsrs.springUtils.AutowireHelper;
 import gsrs.startertests.jupiter.AbstractGsrsJpaEntityJunit5Test;
 import gsrs.startertests.GsrsJpaTest;
