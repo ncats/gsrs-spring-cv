@@ -66,5 +66,14 @@ public class LoadCvOnStartup implements ApplicationRunner {
         up.setRoles(Arrays.asList(Role.values()));
 
         userProfileRepository.saveAndFlush(up);
+
+        UserProfile up2 = new UserProfile();
+        up2.user = new Principal("user1", "user1@example.com");
+        up2.setPassword("user1");
+        up2.active=true;
+        up2.deprecated=false;
+        up2.setRoles(Arrays.asList(Role.Query));
+
+        userProfileRepository.saveAndFlush(up2);
     }
 }
