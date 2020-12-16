@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * GSRS Rest API controller for the {@link ControlledVocabulary} entity.
  */
 @GsrsRestApiController(context = ControlledVocabularyEntityService.CONTEXT,  idHelper = IdHelpers.NUMBER)
-public class CvController extends EtagLegacySearchEntityController<ControlledVocabulary, Long> {
+public class CvController extends EtagLegacySearchEntityController<CvController, ControlledVocabulary, Long> {
     @Autowired
     private CvLegacySearchService cvLegacySearchService;
 
@@ -29,5 +29,6 @@ public class CvController extends EtagLegacySearchEntityController<ControlledVoc
 
     public CvController() {
     }
+
 
 }

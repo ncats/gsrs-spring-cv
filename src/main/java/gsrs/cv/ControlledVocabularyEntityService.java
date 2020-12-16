@@ -35,7 +35,6 @@ public class ControlledVocabularyEntityService extends AbstractGsrsEntityService
 //    private CvSearchService searchService;
 
 
-
     @Override
     public Class<ControlledVocabulary> getEntityClass() {
         return ControlledVocabulary.class;
