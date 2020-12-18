@@ -8,6 +8,8 @@ import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.service.AbstractGsrsEntityService;
 import ix.ginas.models.v1.ControlledVocabulary;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-
+@Scope(proxyMode = ScopedProxyMode.INTERFACES)
 @Service
 public class ControlledVocabularyEntityService extends AbstractGsrsEntityService<ControlledVocabulary, Long> {
     public static final String  CONTEXT = "vocabularies";
