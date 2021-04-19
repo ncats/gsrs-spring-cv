@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gsrs.CvUtils;
 import gsrs.controller.IdHelpers;
+import gsrs.cv.events.CvCreatedEvent;
+import gsrs.cv.events.CvUpdatedEvent;
+import gsrs.events.AbstractEntityCreatedEvent;
+import gsrs.events.AbstractEntityUpdatedEvent;
 import gsrs.repository.ControlledVocabularyRepository;
 import gsrs.service.AbstractGsrsEntityService;
 import ix.ginas.models.v1.ControlledVocabulary;
@@ -24,7 +28,8 @@ public class ControlledVocabularyEntityService extends AbstractGsrsEntityService
 
 
     public ControlledVocabularyEntityService() {
-        super(CONTEXT,  IdHelpers.NUMBER);
+        super(CONTEXT,  IdHelpers.NUMBER,
+                null,null,null);
     }
 
     @Autowired
@@ -67,6 +72,16 @@ public class ControlledVocabularyEntityService extends AbstractGsrsEntityService
     @Override
     protected ControlledVocabulary update(ControlledVocabulary controlledVocabulary) {
         return repository.saveAndFlush(controlledVocabulary);
+    }
+
+    @Override
+    protected AbstractEntityUpdatedEvent<ControlledVocabulary> newUpdateEvent(ControlledVocabulary updatedEntity) {
+        return new CvUpdatedEvent(updatedEntity);
+    }
+
+    @Override
+    protected AbstractEntityCreatedEvent<ControlledVocabulary> newCreationEvent(ControlledVocabulary createdEntity) {
+        return new CvCreatedEvent(createdEntity);
     }
 
     @Override

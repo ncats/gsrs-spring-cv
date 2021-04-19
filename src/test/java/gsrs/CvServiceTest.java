@@ -11,6 +11,7 @@ import gsrs.startertests.jupiter.ResetAllCacheSupplierBeforeEachExtension;
 import gsrs.startertests.TestGsrsValidatorFactory;
 import gsrs.startertests.jupiter.ResetAllEntityProcessorBeforeEachExtension;
 import gsrs.startertests.jupiter.ResetAllEntityServicesBeforeEachExtension;
+import gsrs.validator.DefaultValidatorConfig;
 import gsrs.validator.ValidatorConfig;
 import ix.core.validator.GinasProcessingMessage;
 import ix.core.validator.ValidationMessage;
@@ -148,9 +149,11 @@ public class CvServiceTest extends AbstractGsrsJpaEntityJunit5Test {
     }
 
     private void throwWarningValidation() {
-        validatorFactory.addValidator(controlledVocabularyEntityService.getContext(), ValidatorConfig.builder()
-                .newObjClass(ControlledVocabulary.class)
-                .validatorClass(WarningValidator.class).build());
+        ValidatorConfig config = new DefaultValidatorConfig();
+        config.setNewObjClass(ControlledVocabulary.class);
+        config.setValidatorClass(WarningValidator.class);
+
+        validatorFactory.addValidator(controlledVocabularyEntityService.getContext(), config);
     }
 
     @Test
@@ -223,9 +226,11 @@ public class CvServiceTest extends AbstractGsrsJpaEntityJunit5Test {
     }
 
     private void throwErrorValidation() {
-        validatorFactory.addValidator(controlledVocabularyEntityService.getContext(), ValidatorConfig.builder()
-                .newObjClass(ControlledVocabulary.class)
-                .validatorClass(ErrorValidator.class).build());
+        ValidatorConfig config = new DefaultValidatorConfig();
+        config.setNewObjClass(ControlledVocabulary.class);
+        config.setValidatorClass(ErrorValidator.class);
+
+        validatorFactory.addValidator(controlledVocabularyEntityService.getContext(), config);
     }
 
     public static class WarningValidator implements ValidatorPlugin<Object>{
