@@ -32,7 +32,7 @@ import java.util.List;
 
 @Getter
 @Setter
-//@Indexed
+@SequenceGenerator(name = "LONG_SEQ_ID", sequenceName = "ix_ginas_controlled_vocab_seq", allocationSize = 1)
 public class ControlledVocabulary extends IxModel {
 
     private static final long serialVersionUID = 5455592961232451608L;
