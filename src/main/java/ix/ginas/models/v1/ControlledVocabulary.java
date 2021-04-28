@@ -3,12 +3,11 @@ package ix.ginas.models.v1;
 //import com.example.demo.GsrsAnalyzers;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import ix.core.models.Backup;
-import ix.core.models.Indexable;
-import ix.core.models.IxModel;
-import ix.core.models.Keyword;
+import ix.core.EntityMapperOptions;
+import ix.core.models.*;
 import ix.ginas.models.serialization.KeywordDeserializer;
 import ix.ginas.models.serialization.KeywordListSerializer;
 import lombok.Getter;
@@ -33,7 +32,7 @@ import java.util.List;
 
 @Getter
 @Setter
-//@Indexed
+@SequenceGenerator(name = "LONG_SEQ_ID", sequenceName = "ix_ginas_controlled_vocab_seq", allocationSize = 1)
 public class ControlledVocabulary extends IxModel {
 
     private static final long serialVersionUID = 5455592961232451608L;
@@ -75,7 +74,9 @@ public class ControlledVocabulary extends IxModel {
     @JsonDeserialize(contentUsing = KeywordDeserializer.class)
     @Indexable(name = "Field")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-
+    @JsonView(BeanViews.Full.class)
+    //example of using new EntityMapperOptions annotation to collapse fields to make link out to "_fields" in compact view
+    @EntityMapperOptions(linkoutInCompactView = true)
     public List<Keyword> fields = new ArrayList<Keyword>();
 
     public boolean editable = true;

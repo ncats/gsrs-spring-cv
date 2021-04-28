@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
-public interface ControlledVocabularyRepository extends GsrsRepository<ControlledVocabulary, Long> {
+public interface ControlledVocabularyRepository extends GsrsVersionedRepository<ControlledVocabulary, Long> {
 
     boolean existsByDomain(String domain);
 

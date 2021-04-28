@@ -1,13 +1,16 @@
 package gsrs;
 
+import gsrs.junit.TimeTraveller;
 import gsrs.repository.ControlledVocabularyRepository;
-import gsrs.security.GsrsSecurityConfig;
 import gsrs.springUtils.AutowireHelper;
+import gsrs.startertests.jupiter.AbstractGsrsJpaEntityJunit5Test;
+import gsrs.startertests.GsrsJpaTest;
 import ix.core.search.text.TextIndexerEntityListener;
 import ix.core.search.text.TextIndexerFactory;
 import ix.ginas.models.v1.ControlledVocabulary;
 import ix.ginas.models.v1.VocabularyTerm;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,24 +40,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.*;
 
-@SpringBootTest
+@Disabled("change to use the new Service")
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @ContextConfiguration(classes = LuceneSpringDemoApplication.class)
-//this dirties context makes us recreate the h2 database afte each method (and any other context related thing)
-//this not only wipes out the loaded data but resets all auto increment counters.
-//without this even if we remove all entities from the repository after each test, the ids wouldn't reset back to 1
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@Import({ClearAuditorRule.class , ClearTextIndexerRule.class, AuditConfig.class, AutowireHelper.class, GsrsSecurityConfig.class, TextIndexerEntityListener.class})
-@Transactional
-public class CvControllerTest {
 
-    @Autowired
-    @RegisterExtension
-    ClearAuditorRule clearAuditorRule;
-    @Autowired
-    @RegisterExtension
-    ClearTextIndexerRule clearTextIndexerRule;
+@GsrsJpaTest(dirtyMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Transactional
+public class CvControllerTest extends AbstractGsrsJpaEntityJunit5Test {
+
 
     @RegisterExtension
     TimeTraveller timeTraveller = new TimeTraveller(LocalDate.of(1955, 11, 05));
@@ -153,12 +147,13 @@ public class CvControllerTest {
                 .andExpect(jsonPath("$.created", is(timeTraveller.getCurrentTimeMillis())))
                 .andExpect(jsonPath("$.modified", is(timeTraveller.getCurrentTimeMillis())))
         ;
+        ControlledVocabulary sut2 = repo.getOne(savedVocab.getId());
 
-        savedVocab.setDeprecated(true);
+        sut2.setDeprecated(true);
 
         timeTraveller.jumpAhead(1, TimeUnit.DAYS);
 
-        repo.saveAndFlush(savedVocab);
+        repo.saveAndFlush(sut2);
 
         mockMvc.perform(get("/api/v1/vocabularies("+savedVocab.getId() + ")"))
                 .andExpect(status().isOk())

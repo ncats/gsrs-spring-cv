@@ -66,6 +66,8 @@ public final class CvUtils {
                 //if there was an ID with this object, get rid of it
                 //it was added by mistake
                 cv.id = null;
+//                cv.setVersion(1L);
+
             }
             if (cv.terms != null) { //Terms can be null sometimes now
                 for (VocabularyTerm vt : cv.terms) {

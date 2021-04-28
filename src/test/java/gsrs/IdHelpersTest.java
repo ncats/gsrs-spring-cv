@@ -1,6 +1,7 @@
 package gsrs;
 
 import gsrs.controller.IdHelpers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -8,7 +9,7 @@ import java.util.regex.Pattern;
 
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-
+@Disabled("move this to starter tests and fix inverse")
 public class IdHelpersTest {
 
     @Test
