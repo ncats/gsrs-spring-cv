@@ -29,7 +29,7 @@ import java.util.List;
 @Inheritance
 @DiscriminatorValue("CTLV")
 @Backup
-
+@IndexableRoot
 @Getter
 @Setter
 @SequenceGenerator(name = "LONG_SEQ_ID", sequenceName = "ix_ginas_controlled_vocab_seq", allocationSize = 1)

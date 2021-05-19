@@ -18,7 +18,7 @@
         <java.version>1.8</java.version>
         <spring-cloud.version>Hoxton.SR1</spring-cloud.version>
         <lucene.version>4.10.0</lucene.version>
-        <gsrs.version>0.6.2-SNAPSHOT</gsrs.version>
+        <gsrs.version>0.6.3-SNAPSHOT</gsrs.version>
     </properties>
     <licenses>
         <license>
