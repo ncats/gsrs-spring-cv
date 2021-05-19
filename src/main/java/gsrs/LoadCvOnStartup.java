@@ -41,7 +41,10 @@ public class LoadCvOnStartup implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-
+        //only run if not populated
+        if(repository.count() >0){
+            return;
+        }
         System.out.println("RUNNING");
         System.out.println("reading property file at path '"+jsonPath + "'");
         JsonNode json;
